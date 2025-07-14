@@ -1,2 +1,2 @@
 # azure-auth-integrator
-Charm for providing API to access to azure service principal from client charms
+Charm for providing API to access to Azure service principal from client charms
