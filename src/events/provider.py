@@ -1,6 +1,6 @@
 """Azure service principal related event handlers."""
 
-from charms.data_platform_libs.v0.azure_service_principal import (
+from lib.azure_service_principal import (
     AzureServicePrincipalProviderData,
     AzureServicePrincipalProviderEventHandlers,
     ServicePrincipalInfoRequestedEvent,
