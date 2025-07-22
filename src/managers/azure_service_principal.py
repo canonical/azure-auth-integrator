@@ -2,9 +2,10 @@
 
 from utils.logging import WithLogging
 
+
 class AzureServicePrincipalManager(WithLogging):
     """Azure service principal manager class."""
-    
+
     def __init__(self, relation_data):
         self.relation_data = relation_data
 

@@ -1,11 +1,11 @@
 """Azure Storage Provider related event handlers."""
 
 import ops
+
 # from charms.data_platform_libs.v0.azure_storage import AzureStorageProviderData
 from ops import CharmBase
 from ops.charm import ConfigChangedEvent, StartEvent
 
-from constants import AZURE_RELATION_NAME
 from core.context import Context
 from events.base import BaseEventHandler, compute_status
 from managers.azure_service_principal import AzureServicePrincipalManager

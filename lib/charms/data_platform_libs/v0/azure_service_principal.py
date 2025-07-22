@@ -240,7 +240,7 @@ class AzureServicePrincipalProviderData(ProviderData):
 
 class AzureServicePrincipalProviderEventHandlers(EventHandlers):
     """The event handlers related to provider side of Azure service principal relation."""
-    on = AzureServicePrinicpalProviderEvents()
+    on = AzureServicePrincipalProviderEvents()
 
     def __init__(
         self, charm: CharmBase, relation_data: AzureServicePrincipalProviderData, unique_key: str = ""
