@@ -1,15 +1,15 @@
 """Azure service principal related event handlers."""
 
-from lib.azure_service_principal import (
-    AzureServicePrincipalProviderData,
-    AzureServicePrincipalProviderEventHandlers,
-    ServicePrincipalInfoRequestedEvent,
-)
 from ops import CharmBase
 
 from constants import AZURE_RELATION_NAME
 from core.context import Context
 from events.base import BaseEventHandler
+from lib.azure_service_principal import (
+    AzureServicePrincipalProviderData,
+    AzureServicePrincipalProviderEventHandlers,
+    ServicePrincipalInfoRequestedEvent,
+)
 from managers.azure_service_principal import AzureServicePrincipalManager
 from utils.logging import WithLogging
 

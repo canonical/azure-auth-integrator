@@ -33,7 +33,9 @@ def decode_secret_key(model: ops.Model, secret_id: str) -> Optional[str]:
         secret_content = model.get_secret(id=secret_id).get_content(refresh=True)
 
         if not secret_content.get("client-secret"):
-            raise ValueError(f"The field 'client-secret' was not found in the secret '{secret_id}'.")
+            raise ValueError(
+                f"The field 'client-secret' was not found in the secret '{secret_id}'."
+            )
         return secret_content["client-secret"]
     except ops.model.SecretNotFoundError:
         raise ops.model.SecretNotFoundError(f"The secret '{secret_id}' does not exist.")
