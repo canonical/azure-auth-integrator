@@ -1,0 +1,19 @@
+options:
+  subscription-id:
+    type: string
+    description: |
+      The subscription ID of the service principal used to authenticate with Azure Storage.
+  tenant-id:
+    type: string
+    description: |
+      The tenant ID of the service principal used to authenticate with Azure Storage.
+  client-id:
+    type: string
+    description: |
+      The client ID of the service principal used to authenticate with Azure Storage.
+  credentials:
+    type: secret
+    description: |
+      The credentials to connect to Azure service principal. This needs to be a Juju 
+      Secret URI pointing to a secret that contains the following keys:
+      1. client-secret: The secret key corresponding to the client you will be using.
