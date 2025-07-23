@@ -2,7 +2,6 @@
 
 import ops
 
-# from charms.data_platform_libs.v0.azure_storage import AzureStorageProviderData
 from ops import CharmBase
 from ops.charm import ConfigChangedEvent, StartEvent
 
@@ -21,8 +20,6 @@ class GeneralEvents(BaseEventHandler, WithLogging):
         self.charm = charm
         self.context = context
 
-        # self.azure_provider_data = AzureStorageProviderData(self.charm.model, AZURE_RELATION_NAME)
-        ###
         self.azure_service_principal_manager = AzureServicePrincipalManager(None)
 
         self.framework.observe(self.charm.on.start, self._on_start)
