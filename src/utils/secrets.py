@@ -33,7 +33,7 @@ def decode_secret_key(model: ops.Model, secret_id: str) -> dict[str, str] | None
 
         for key in ["client-id", "client-secret"]:
             if not secret_content.get(key):
-                raise ValueError(f"The field '{field}' was not found in secret '{secret_id}'.")
+                raise ValueError(f"The key '{key}' was not found in secret '{secret_id}'.")
 
         return {
             "client-id": secret_content["client-id"],

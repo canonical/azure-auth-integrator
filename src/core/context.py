@@ -1,7 +1,5 @@
 """Charm context definition and parsing logic."""
 
-from typing import Optional
-
 from ops import ConfigData, Model
 
 from constants import AZURE_SERVICE_PRINCIPAL_MANDATORY_OPTIONS
@@ -18,7 +16,7 @@ class Context(WithLogging):
         self.charm_config = config
 
     @property
-    def azure_service_principal(self) -> Optional[AzureServicePrincipalInfo]:
+    def azure_service_principal(self) -> AzureServicePrincipalInfo | None:
         """Return information related to the Azure service principal parameters."""
         for option in AZURE_SERVICE_PRINCIPAL_MANDATORY_OPTIONS:
             if self.charm_config.get(option) is None:
@@ -29,8 +27,7 @@ class Context(WithLogging):
             secret_dict = decode_secret_key(self.model, credentials)
         except Exception as e:
             self.logger.warning(str(e))
-            client_id = ""
-            client_secret = ""
+            return None
 
         return AzureServicePrincipalInfo(
             subscription_id=self.charm_config.get("subscription-id"),

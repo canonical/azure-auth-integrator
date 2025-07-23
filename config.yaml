@@ -16,5 +16,5 @@ options:
     description: |
       The credentials to connect to Azure service principal. This needs to be a Juju 
       Secret URI pointing to a secret that contains the following keys:
-      1. client-id: ID correspending to the client that will be used.
+      1. client-id: ID corresponding to the client that will be used.
       2. client-secret: The secret key corresponding to the client that will be used.

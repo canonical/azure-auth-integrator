@@ -1,7 +1,7 @@
 """Logic for the provider and requirer side of the azure_service_principal interface."""
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from charms.data_platform_libs.v0.data_interfaces import (
     EventHandlers,
@@ -21,7 +21,6 @@ from ops.charm import (
 )
 from ops.framework import EventSource
 from ops.model import Relation
-
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +43,7 @@ class ContainerEvent(ServicePrincipalEvent):
     """Base class for events that include the container."""
 
     @property
-    def container(self) -> Optional[str]:
+    def container(self) -> str | None:
         """Returns the container name."""
         if not self.relation.app:
             return None
@@ -88,7 +87,7 @@ class AzureServicePrincipalRequirerData(RequirerData):
 
     SECRET_FIELDS = ["client-secret"]
 
-    def __init__(self, model, relation_name: str, container: Optional[str] = None):
+    def __init__(self, model, relation_name: str, container: str | None = None):
         super().__init__(
             model,
             relation_name,
@@ -235,7 +234,7 @@ class AzureServicePrincipalRequires(
         self,
         charm: CharmBase,
         relation_name: str,
-        container: Optional[str] = None,
+        container: str | None = None,
     ):
         AzureServicePrincipalRequirerData.__init__(self, charm.model, relation_name, container)
         AzureServicePrincipalRequirerEventHandlers.__init__(self, charm, self)
