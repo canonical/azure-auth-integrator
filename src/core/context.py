@@ -26,14 +26,15 @@ class Context(WithLogging):
 
         credentials = self.charm_config.get("credentials")
         try:
-            client_secret = decode_secret_key(self.model, credentials)
+            secret_dict = decode_secret_key(self.model, credentials)
         except Exception as e:
             self.logger.warning(str(e))
+            client_id = ""
             client_secret = ""
 
         return AzureServicePrincipalInfo(
             subscription_id=self.charm_config.get("subscription-id"),
             tenant_id=self.charm_config.get("tenant-id"),
-            client_id=self.charm_config.get("client-id"),
-            client_secret=client_secret,
+            client_id=secret_dict["client-id"],
+            client_secret=secret_dict["client-secret"],
         )

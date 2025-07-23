@@ -1,7 +1,6 @@
 """Utility functions related to secrets."""
 
 import logging
-from typing import Optional
 
 import ops
 import ops.charm
@@ -13,30 +12,33 @@ import ops.model
 logger = logging.getLogger(__name__)
 
 
-def decode_secret_key(model: ops.Model, secret_id: str) -> Optional[str]:
-    """Decode the secret with a given secret_id and return "client-secret" in plaintext value.
+def decode_secret_key(model: ops.Model, secret_id: str) -> dict[str, str] | None:
+    """Decode the secret with a given secret_id and return "client-id" and "client-secret".
 
     Args:
         model: juju model to operate in
-        secret_id (str): The ID (URI) of the secret that contains the secret key
+        secret_id: The ID (URI) of the secret that contains the secret key
 
     Raises:
         ops.model.SecretNotFoundError: When either the secret does not exist or the secret
-            does not have client-secret in its content.
+            does not have "client-secret" or "client-secret" in its content.
         ops.model.ModelError: When the permission to access the secret has not been granted
             yet.
 
     Returns:
-        Optional[str]: The value of client-secret in plain text.
+        A dictionary containing the 'client-id' and 'client-secret'.
     """
     try:
         secret_content = model.get_secret(id=secret_id).get_content(refresh=True)
 
-        if not secret_content.get("client-secret"):
-            raise ValueError(
-                f"The field 'client-secret' was not found in the secret '{secret_id}'."
-            )
-        return secret_content["client-secret"]
+        for key in ["client-id", "client-secret"]:
+            if not secret_content.get(key):
+                raise ValueError(f"The field '{field}' was not found in secret '{secret_id}'.")
+
+        return {
+            "client-id": secret_content["client-id"],
+            "client-secret": secret_content["client-secret"],
+        }
     except ops.model.SecretNotFoundError:
         raise ops.model.SecretNotFoundError(f"The secret '{secret_id}' does not exist.")
     except ValueError as ve:
