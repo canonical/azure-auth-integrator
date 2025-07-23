@@ -1,3 +1,6 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 """Constants to be used in the charm code."""
 
 AZURE_RELATION_NAME = "azure-service-principal-credentials"

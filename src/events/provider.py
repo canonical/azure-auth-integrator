@@ -1,3 +1,6 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 """Azure service principal related event handlers."""
 
 from ops import CharmBase

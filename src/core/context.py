@@ -1,3 +1,6 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 """Charm context definition and parsing logic."""
 
 from ops import ConfigData, Model

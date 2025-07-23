@@ -1,3 +1,6 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 """Base utilities exposing common functionalities for all Events classes."""
 
 from functools import wraps
