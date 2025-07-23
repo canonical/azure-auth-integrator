@@ -12,7 +12,7 @@ from utils.logging import WithLogging
 
 
 class GeneralEvents(BaseEventHandler, WithLogging):
-    """Class implementing Azure Integration event hooks."""
+    """Class implementing general charm-related event hooks."""
 
     def __init__(self, charm: CharmBase, context: Context):
         super().__init__(charm, "general")
