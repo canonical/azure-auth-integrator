@@ -4,7 +4,6 @@
 """Azure Storage Provider related event handlers."""
 
 import ops
-
 from ops import CharmBase
 from ops.charm import ConfigChangedEvent, StartEvent
 

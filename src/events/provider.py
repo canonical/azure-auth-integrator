@@ -48,9 +48,4 @@ class AzureServicePrincipalProviderEvents(BaseEventHandler, WithLogging):
         if not self.charm.unit.is_leader():
             return
 
-        container_name = self.charm.config.get("container")
-        # assert container_name is not None
-        if not container_name:
-            self.logger.warning("Container is setup by the requirer application!")
-
         self.azure_service_principal_manager.update(self.context.azure_service_principal)
