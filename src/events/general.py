@@ -24,8 +24,12 @@ class GeneralEvents(BaseEventHandler, WithLogging):
         self.charm = charm
         self.context = context
 
-        self.azure_service_principal_provider_data = AzureServicePrincipalProviderData(self.charm.model, AZURE_RELATION_NAME)
-        self.azure_service_principal_manager = AzureServicePrincipalManager(self.azure_service_principal_provider_data)
+        self.azure_service_principal_provider_data = AzureServicePrincipalProviderData(
+            self.charm.model, AZURE_RELATION_NAME
+        )
+        self.azure_service_principal_manager = AzureServicePrincipalManager(
+            self.azure_service_principal_provider_data
+        )
 
         self.framework.observe(self.charm.on.start, self._on_start)
         self.framework.observe(self.charm.on.update_status, self._on_update_status)
