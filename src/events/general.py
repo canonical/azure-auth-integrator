@@ -7,8 +7,10 @@ import ops
 from ops import CharmBase
 from ops.charm import ConfigChangedEvent, StartEvent
 
+from constants import AZURE_RELATION_NAME
 from core.context import Context
 from events.base import BaseEventHandler, compute_status
+from lib.azure_service_principal import AzureServicePrincipalProviderData
 from managers.azure_service_principal import AzureServicePrincipalManager
 from utils.logging import WithLogging
 
@@ -22,7 +24,8 @@ class GeneralEvents(BaseEventHandler, WithLogging):
         self.charm = charm
         self.context = context
 
-        self.azure_service_principal_manager = AzureServicePrincipalManager(None)
+        self.azure_service_principal_provider_data = AzureServicePrincipalProviderData(self.charm.model, AZURE_RELATION_NAME)
+        self.azure_service_principal_manager = AzureServicePrincipalManager(self.azure_service_principal_provider_data)
 
         self.framework.observe(self.charm.on.start, self._on_start)
         self.framework.observe(self.charm.on.update_status, self._on_update_status)
@@ -47,7 +50,7 @@ class GeneralEvents(BaseEventHandler, WithLogging):
             return
 
         self.logger.debug(f"Config changed... Current configuration: {self.charm.config}")
-        # self.azure_storage_manager.update(self.context.azure_storage)
+        self.azure_service_principal_manager.update(self.context.azure_service_principal)
 
     def _on_secret_changed(self, event: ops.SecretChangedEvent):
         """Handle the secret changed event.
@@ -67,4 +70,4 @@ class GeneralEvents(BaseEventHandler, WithLogging):
         if self.charm.config.get("credentials") != secret.id:
             return
 
-        # self.azure_storage_manager.update(self.context.azure_storage)
+        self.azure_service_principal_manager.update(self.context.azure_service_principal)
