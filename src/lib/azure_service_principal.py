@@ -39,31 +39,19 @@ class ServicePrincipalEvent(RelationEvent):
     pass
 
 
-class ContainerEvent(ServicePrincipalEvent):
-    """Base class for events that include the container."""
-
-    @property
-    def container(self) -> str | None:
-        """Returns the container name."""
-        if not self.relation.app:
-            return None
-
-        return self.relation.data[self.relation.app].get("container", "")
-
-
-class ServicePrincipalInfoRequestedEvent(ContainerEvent):
+class ServicePrincipalInfoRequestedEvent(ServicePrincipalEvent):
     """Event for requesting data from the interface."""
 
     pass
 
 
-class ServicePrincipalInfoChangedEvent(ContainerEvent):
+class ServicePrincipalInfoChangedEvent(ServicePrincipalEvent):
     """Event for changing data from the interface."""
 
     pass
 
 
-class ServicePrincipalInfoGoneEvent(ContainerEvent):
+class ServicePrincipalInfoGoneEvent(ServicePrincipalEvent):
     """Event for the removal of data from the interface."""
 
     pass
@@ -87,12 +75,11 @@ class AzureServicePrincipalRequirerData(RequirerData):
 
     SECRET_FIELDS = ["client-secret"]
 
-    def __init__(self, model, relation_name: str, container: str | None = None):
+    def __init__(self, model, relation_name: st):
         super().__init__(
             model,
             relation_name,
         )
-        self.container = container
 
 
 class AzureServicePrincipalRequirerEventHandlers(RequirerEventHandlers):
@@ -121,12 +108,7 @@ class AzureServicePrincipalRequirerEventHandlers(RequirerEventHandlers):
         )
 
     def _on_relation_joined_event(self, event: RelationJoinedEvent) -> None:
-        """Event emitted when the Azure service principal relation is joined."""
-        logger.info(f"Azure service principal relation ({event.relation.name}) joined...")
-        if self.container is None:
-            self.container = f"relation-{event.relation.id}"
-        event_data = {"container": self.container}
-        self.relation_data.update_relation_data(event.relation.id, event_data)
+        pass
 
     def get_azure_service_principal_info(self) -> Dict[str, str]:
         """Return the Azure service principal info as a dictionary."""
@@ -225,7 +207,7 @@ class AzureServicePrincipalRequirerEventHandlers(RequirerEventHandlers):
         return list(self.charm.model.relations[self.relation_name])
 
 
-class AzureServicePrincipalRequires(
+class AzureServicePrincipalRequirer(
     AzureServicePrincipalRequirerData, AzureServicePrincipalRequirerEventHandlers
 ):
     """The requirer side of Azure service principal relation."""
@@ -234,9 +216,8 @@ class AzureServicePrincipalRequires(
         self,
         charm: CharmBase,
         relation_name: str,
-        container: str | None = None,
     ):
-        AzureServicePrincipalRequirerData.__init__(self, charm.model, relation_name, container)
+        AzureServicePrincipalRequirerData.__init__(self, charm.model, relation_name)
         AzureServicePrincipalRequirerEventHandlers.__init__(self, charm, self)
 
 
@@ -261,17 +242,18 @@ class AzureServicePrincipalProviderEventHandlers(EventHandlers):
         super().__init__(charm, relation_data, unique_key)
         self.relation_data = relation_data
 
-    def _on_relation_changed_event(self, event: RelationChangedEvent):
+    def _on_relation_joined_event(self, event: RelationJoinedEvent):
         if not self.charm.unit.is_leader():
             return
-        diff = self._diff(event)
-        if "container" in diff.added:
-            self.on.service_principal_info_requested.emit(
-                event.relation, app=event.app, unit=event.unit
-            )
+        self.on.service_principal_info_requested.emit(
+            event.relation, app=event.app, unit=event.unit
+        )
+
+    def _on_relation_changed_event(self, event: RelationChangedEvent):
+        pass
 
 
-class AzureServicePrincipalProvides(
+class AzureServicePrincipalProvider(
     AzureServicePrincipalProviderData, AzureServicePrincipalProviderEventHandlers
 ):
     """The provider side of the Azure service principal relation."""
