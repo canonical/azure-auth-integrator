@@ -75,7 +75,7 @@ class AzureServicePrincipalRequirerData(RequirerData):
 
     SECRET_FIELDS = ["client-secret"]
 
-    def __init__(self, model, relation_name: st):
+    def __init__(self, model, relation_name: str):
         super().__init__(
             model,
             relation_name,
