@@ -7,10 +7,6 @@ options:
     type: string
     description: |
       The tenant ID of the service principal used to authenticate with Azure Storage.
-  client-id:
-    type: string
-    description: |
-      The client ID of the service principal used to authenticate with Azure Storage.
   credentials:
     type: secret
     description: |
