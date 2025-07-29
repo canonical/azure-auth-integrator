@@ -3,10 +3,8 @@
 
 """Base utilities exposing common functionalities for all Events classes."""
 
-from functools import wraps
-from typing import Callable
 
-from ops import EventBase, Model, Object, StatusBase
+from ops import Model, Object, StatusBase
 from ops.model import ActiveStatus, BlockedStatus, ModelError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 

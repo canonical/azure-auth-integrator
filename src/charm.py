@@ -34,7 +34,6 @@ class AzureAuthIntegratorCharm(ops.charm.CharmBase):
         self.framework.observe(self.on.collect_unit_status, self._on_collect_unit_status)
         self.framework.observe(self.on.collect_app_status, self._on_collect_app_status)
 
-
     def _on_collect_unit_status(self, event: ops.CollectStatusEvent) -> None:
         """Set the status of the unit.
 
@@ -49,7 +48,6 @@ class AzureAuthIntegratorCharm(ops.charm.CharmBase):
 
         event.add_status(ops.model.ActiveStatus())
 
-
     def _on_collect_app_status(self, event: ops.CollectStatusEvent) -> None:
         """Set the status of the app.
 
@@ -60,16 +58,19 @@ class AzureAuthIntegratorCharm(ops.charm.CharmBase):
 
         event.add_status(ops.model.ActiveStatus())
 
-
     def _collect_domain_statuses(self) -> list[ops.StatusBase]:
         """Return a list of each component status of the charm."""
         statuses: list[ops.StatusBase] = []
 
-        statuses.append(self.azure_service_principal_provider_events.get_app_status(
-            self.azure_service_principal_provider_events.charm.model, self.azure_service_principal_provider_events.charm.config
-        ))
+        statuses.append(
+            self.azure_service_principal_provider_events.get_app_status(
+                self.azure_service_principal_provider_events.charm.model,
+                self.azure_service_principal_provider_events.charm.config,
+            )
+        )
 
         return statuses
+
 
 if __name__ == "__main__":
     ops.main(AzureAuthIntegratorCharm)

@@ -5,7 +5,7 @@
 
 import ops
 from ops import CharmBase
-from ops.charm import ConfigChangedEvent, StartEvent
+from ops.charm import ConfigChangedEvent
 
 from constants import AZURE_RELATION_NAME
 from core.context import Context
@@ -34,7 +34,6 @@ class GeneralEvents(BaseEventHandler, WithLogging):
         self.framework.observe(self.charm.on.update_status, self._on_update_status)
         self.framework.observe(self.charm.on.config_changed, self._on_config_changed)
         self.framework.observe(self.charm.on.secret_changed, self._on_secret_changed)
-
 
     def _on_update_status(self, event: ops.UpdateStatusEvent):
         """Handle the update status event."""
