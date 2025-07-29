@@ -45,24 +45,3 @@ class BaseEventHandler(Object, WithLogging):
             return BlockedStatus(str(e))
 
         return ActiveStatus()
-
-
-def compute_status(
-    hook: Callable[[BaseEventHandler, EventBase], None],
-) -> Callable[[BaseEventHandler, EventBase], None]:
-    """Decorator to automatically compute statuses at the end of the hook."""
-
-    @wraps(hook)
-    def wrapper_hook(event_handler: BaseEventHandler, event: EventBase):
-        """Return output after resetting statuses."""
-        res = hook(event_handler, event)
-        if event_handler.charm.unit.is_leader():
-            event_handler.charm.app.status = event_handler.get_app_status(
-                event_handler.charm.model, event_handler.charm.config
-            )
-        event_handler.charm.unit.status = event_handler.get_app_status(
-            event_handler.charm.model, event_handler.charm.config
-        )
-        return res
-
-    return wrapper_hook
