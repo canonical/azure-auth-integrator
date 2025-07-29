@@ -3,7 +3,6 @@
 
 """Base utilities exposing common functionalities for all Events classes."""
 
-
 from ops import Model, Object, StatusBase
 from ops.model import ActiveStatus, BlockedStatus, ModelError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
