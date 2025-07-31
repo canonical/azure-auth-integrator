@@ -35,6 +35,6 @@ class Context(WithLogging):
         return AzureServicePrincipalInfo(
             subscription_id=self.charm_config.get("subscription-id"),
             tenant_id=self.charm_config.get("tenant-id"),
-            client_id=secret_dict["client-id"],
-            client_secret=secret_dict["client-secret"],
+            client_id=secret_dict.get("client-id"),
+            client_secret=secret_dict.get("client-secret"),
         )

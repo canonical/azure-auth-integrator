@@ -71,11 +71,6 @@ class ApplicationCharm(CharmBase):
         logger.info("Credentials gone...")
         self.unit.status = WaitingStatus("Waiting for relation.")
 
-    @property
-    def _peers(self):
-        """Retrieve the peer relation (`ops.model.Relation`)."""
-        return self.model.get_relation(PEER)
-
     def _on_update_status(self, _):
         service_principal_info = self.azure_service_principal_client.get_azure_service_principal_info()
         if service_principal_info:
