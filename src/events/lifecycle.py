@@ -14,7 +14,7 @@ from lib.azure_service_principal import (
     AzureServicePrincipalProviderData,
     AzureServicePrincipalProviderEventHandlers,
     ServicePrincipalInfoRequestedEvent,
-    )
+)
 from utils.logging import WithLogging
 
 
