@@ -7,7 +7,7 @@ import ops
 from ops import CharmBase
 from ops.charm import ConfigChangedEvent
 
-from constants import AZURE_RELATION_NAME
+from constants import AZURE_SERVICE_PRINCIPAL_RELATION_NAME
 from core.context import Context
 from events.base import BaseEventHandler
 from lib.azure_service_principal import AzureServicePrincipalProviderData
@@ -25,7 +25,7 @@ class GeneralEvents(BaseEventHandler, WithLogging):
         self.context = context
 
         self.azure_service_principal_provider_data = AzureServicePrincipalProviderData(
-            self.charm.model, AZURE_RELATION_NAME
+            self.charm.model, AZURE_SERVICE_PRINCIPAL_RELATION_NAME
         )
         self.azure_service_principal_manager = AzureServicePrincipalManager(
             self.azure_service_principal_provider_data
