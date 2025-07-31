@@ -15,11 +15,11 @@ from managers.azure_service_principal import AzureServicePrincipalManager
 from utils.logging import WithLogging
 
 
-class GeneralEvents(BaseEventHandler, WithLogging):
-    """Class implementing general charm-related event hooks."""
+class LifecycleEvents(BaseEventHandler, WithLogging):
+    """Class implementing lifecycle charm-related event hooks."""
 
     def __init__(self, charm: CharmBase, context: Context):
-        super().__init__(charm, "general")
+        super().__init__(charm, "lifecycle")
 
         self.charm = charm
         self.context = context

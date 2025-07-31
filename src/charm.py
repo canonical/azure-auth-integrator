@@ -10,7 +10,7 @@ import logging
 import ops
 
 from core.context import Context
-from events.general import GeneralEvents
+from events.lifecycle import LifecycleEvents
 from events.provider import AzureServicePrincipalProviderEvents
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ class AzureAuthIntegratorCharm(ops.charm.CharmBase):
         self.context = Context(model=self.model, config=self.config)
 
         # Event Handlers
-        self.general_events = GeneralEvents(self, self.context)
+        self.lifecycle_events = LifecycleEvents(self, self.context)
         self.azure_service_principal_provider_events = AzureServicePrincipalProviderEvents(
             self, self.context
         )
