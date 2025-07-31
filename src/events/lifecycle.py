@@ -11,7 +11,6 @@ from constants import AZURE_SERVICE_PRINCIPAL_RELATION_NAME
 from core.context import Context
 from events.base import BaseEventHandler
 from lib.azure_service_principal import AzureServicePrincipalProviderData
-from managers.azure_service_principal import AzureServicePrincipalManager
 from utils.logging import WithLogging
 
 
@@ -27,9 +26,6 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         self.azure_service_principal_provider_data = AzureServicePrincipalProviderData(
             self.charm.model, AZURE_SERVICE_PRINCIPAL_RELATION_NAME
         )
-        self.azure_service_principal_manager = AzureServicePrincipalManager(
-            self.azure_service_principal_provider_data
-        )
 
         self.framework.observe(self.charm.on.update_status, self._on_update_status)
         self.framework.observe(self.charm.on.config_changed, self._on_config_changed)
@@ -37,7 +33,7 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
 
     def _on_update_status(self, event: ops.UpdateStatusEvent):
         """Handle the update status event."""
-        self.azure_service_principal_manager.update(self.context.azure_service_principal)
+        self._update_provider_data()
 
     def _on_config_changed(self, event: ConfigChangedEvent) -> None:  # noqa: C901
         """Event handler for configuration changed events."""
@@ -46,7 +42,7 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
             return
 
         self.logger.debug(f"Config changed... Current configuration: {self.charm.config}")
-        self.azure_service_principal_manager.update(self.context.azure_service_principal)
+        self._update_provider_data()
 
     def _on_secret_changed(self, event: ops.SecretChangedEvent):
         """Handle the secret changed event.
@@ -66,4 +62,15 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         if self.charm.config.get("credentials") != secret.id:
             return
 
-        self.azure_service_principal_manager.update(self.context.azure_service_principal)
+        self._update_provider_data()
+
+    def _update_provider_data(self):
+        """Update the contents of the relation data bag."""
+        if (
+            len(self.azure_service_principal_provider_data.relations) > 0
+            and self.context.azure_service_principal
+        ):
+            for relation in self.azure_service_principal_provider_data.relations:
+                self.azure_service_principal_provider_data.update_relation_data(
+                    relation.id, self.context.azure_service_principal.to_dict()
+                )

@@ -13,7 +13,6 @@ from lib.azure_service_principal import (
     AzureServicePrincipalProviderEventHandlers,
     ServicePrincipalInfoRequestedEvent,
 )
-from managers.azure_service_principal import AzureServicePrincipalManager
 from utils.logging import WithLogging
 
 
@@ -31,9 +30,6 @@ class AzureServicePrincipalProviderEvents(BaseEventHandler, WithLogging):
         )
         self.azure_provider = AzureServicePrincipalProviderEventHandlers(
             self.charm, self.azure_provider_data
-        )
-        self.azure_service_principal_manager = AzureServicePrincipalManager(
-            self.azure_provider_data
         )
         self.framework.observe(
             self.azure_provider.on.service_principal_info_requested,
