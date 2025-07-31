@@ -211,9 +211,7 @@ class AzureServicePrincipalProviderEventHandlers(EventHandlers):
             self.charm.on[self.relation_name].relation_changed, self._on_relation_changed_event
         )
 
-        self.framework.observe(
-            self.charm.on.secret_changed, self._on_secret_changed_event
-        )
+        self.framework.observe(self.charm.on.secret_changed, self._on_secret_changed_event)
 
     def _on_relation_joined_event(self, event: RelationJoinedEvent):
         logger.warning("Calling relation joined method...")
