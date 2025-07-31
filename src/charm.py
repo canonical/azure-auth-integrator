@@ -11,7 +11,6 @@ import ops
 
 from core.context import Context
 from events.lifecycle import LifecycleEvents
-from events.provider import AzureServicePrincipalProviderEvents
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +26,6 @@ class AzureAuthIntegratorCharm(ops.charm.CharmBase):
 
         # Event Handlers
         self.lifecycle_events = LifecycleEvents(self, self.context)
-        self.azure_service_principal_provider_events = AzureServicePrincipalProviderEvents(
-            self, self.context
-        )
 
         self.framework.observe(self.on.collect_unit_status, self._on_collect_unit_status)
         self.framework.observe(self.on.collect_app_status, self._on_collect_app_status)
@@ -63,9 +59,9 @@ class AzureAuthIntegratorCharm(ops.charm.CharmBase):
         statuses: list[ops.StatusBase] = []
 
         statuses.append(
-            self.azure_service_principal_provider_events.get_app_status(
-                self.azure_service_principal_provider_events.charm.model,
-                self.azure_service_principal_provider_events.charm.config,
+            self.lifecycle_events.get_app_status(
+                self.lifecycle_events.charm.model,
+                self.lifecycle_events.charm.config,
             )
         )
 

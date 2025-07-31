@@ -10,7 +10,11 @@ from ops.charm import ConfigChangedEvent
 from constants import AZURE_SERVICE_PRINCIPAL_RELATION_NAME
 from core.context import Context
 from events.base import BaseEventHandler
-from lib.azure_service_principal import AzureServicePrincipalProviderData
+from lib.azure_service_principal import (
+    AzureServicePrincipalProviderData,
+    AzureServicePrincipalProviderEventHandlers,
+    ServicePrincipalInfoRequestedEvent,
+    )
 from utils.logging import WithLogging
 
 
@@ -26,10 +30,17 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         self.azure_service_principal_provider_data = AzureServicePrincipalProviderData(
             self.charm.model, AZURE_SERVICE_PRINCIPAL_RELATION_NAME
         )
+        self.azure_service_principal_provider = AzureServicePrincipalProviderEventHandlers(
+            self.charm, self.azure_service_principal_provider_data
+        )
 
         self.framework.observe(self.charm.on.update_status, self._on_update_status)
         self.framework.observe(self.charm.on.config_changed, self._on_config_changed)
         self.framework.observe(self.charm.on.secret_changed, self._on_secret_changed)
+        self.framework.observe(
+            self.azure_service_principal_provider.on.service_principal_info_requested,
+            self._on_azure_service_principal_info_requested,
+        )
 
     def _on_update_status(self, event: ops.UpdateStatusEvent):
         """Handle the update status event."""
@@ -74,3 +85,13 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
                 self.azure_service_principal_provider_data.update_relation_data(
                     relation.id, self.context.azure_service_principal.to_dict()
                 )
+
+    def _on_azure_service_principal_info_requested(
+        self, event: ServicePrincipalInfoRequestedEvent
+    ):
+        """Handle the `service-principal-info-requested` event."""
+        self.logger.info("On service-principal-info-requested")
+        if not self.charm.unit.is_leader():
+            return
+
+        self.azure_service_principal_manager.update(self.context.azure_service_principal)
