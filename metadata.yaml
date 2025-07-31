@@ -8,4 +8,3 @@ description: |
 provides:
   azure-service-principal-credentials:
     interface: azure_service_principal
-    limit: 1
