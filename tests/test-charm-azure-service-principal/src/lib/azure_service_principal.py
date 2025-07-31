@@ -73,7 +73,7 @@ class AzureServicePrincipalRequirerEvents(CharmEvents):
 class AzureServicePrincipalRequirerData(RequirerData):
     """Data abstraction of the requirer side of Azure service principal relation."""
 
-    SECRET_FIELDS = ["client-secret"]
+    SECRET_FIELDS = ["client-id", "client-secret"]
 
     def __init__(self, model, relation_name: str):
         super().__init__(
@@ -149,50 +149,7 @@ class AzureServicePrincipalRequirerEventHandlers(RequirerEventHandlers):
 
     def _on_secret_changed_event(self, event: SecretChangedEvent):
         """Event handler for handling a new value of a secret."""
-        if not event.secret.label:
-            return
-
-        relation = self.relation_data._relation_from_secret_label(event.secret.label)
-        if not relation:
-            logging.info(
-                f"Received secret {event.secret.label} but couldn't parse, seems irrelevant."
-            )
-            return
-
-        if event.secret.label != self.relation_data._generate_secret_label(
-            relation.name,
-            relation.id,
-            "extra",
-        ):
-            logging.info("Secret is not relevant for us.")
-            return
-
-        if relation.app == self.charm.app:
-            logging.info("Secret changed event ignored for Secret Owner")
-
-        remote_unit = None
-        for unit in relation.units:
-            if unit.app != self.charm.app:
-                remote_unit = unit
-
-        # check if the mandatory options are in the relation data
-        contains_required_options = True
-        credentials = self.get_azure_service_principal_info()
-        missing_options = []
-        for configuration_option in AZURE_SERVICE_PRINCIPAL_REQUIRED_INFO:
-            if configuration_option not in credentials:
-                contains_required_options = False
-                missing_options.append(configuration_option)
-
-        # emit credential change event only if all mandatory fields are present
-        if contains_required_options:
-            getattr(self.on, "service_principal_info_changed").emit(
-                relation, app=relation.app, unit=remote_unit
-            )
-        else:
-            logger.warning(
-                f"Some mandatory fields: {missing_options} are not present, do not emit credential change event!"
-            )
+        pass
 
     def _on_relation_broken_event(self, event: RelationBrokenEvent) -> None:
         """Event handler for handling relation_broken event."""
@@ -253,7 +210,11 @@ class AzureServicePrincipalProviderEventHandlers(EventHandlers):
         self.framework.observe(
             self.charm.on[self.relation_name].relation_changed, self._on_relation_changed_event
         )
-        
+
+        self.framework.observe(
+            self.charm.on.secret_changed, self._on_secret_changed_event
+        )
+
     def _on_relation_joined_event(self, event: RelationJoinedEvent):
         logger.warning("Calling relation joined method...")
         if not self.charm.unit.is_leader():
@@ -263,6 +224,9 @@ class AzureServicePrincipalProviderEventHandlers(EventHandlers):
         )
 
     def _on_relation_changed_event(self, event: RelationChangedEvent):
+        pass
+
+    def _on_secret_changed_event(self, event: SecretChangedEvent):
         pass
 
 

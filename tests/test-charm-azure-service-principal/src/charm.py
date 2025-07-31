@@ -55,20 +55,21 @@ class ApplicationCharm(CharmBase):
 
     def _on_start(self, _) -> None:
         """Only sets an waiting status."""
-        self.unit.status = WaitingStatus("Waiting for relation")
+        self.unit.status = WaitingStatus("Waiting for relation.")
 
     def _on_relation_joined(self, _: RelationJoinedEvent):
         """On Azure credential relation joined."""
-        logger.info("Relation_1 joined...")
+        logger.info("azure-service-principal-credentials relation joined...")
         self.unit.status = ActiveStatus()
 
     def _on_service_principal_info_changed(self, e: ServicePrincipalInfoChangedEvent):
-        credentials = self.azure_service_principal_client.get_azure_service_principal_info()
-        logger.info(f"Credentials changed. New credentials: {credentials}")
+        service_principal_info = self.azure_service_principal_client.get_azure_service_principal_info()
+        if service_principal_info:
+            logger.debug(f"Credentials changed. New credentials: {service_principal_info}")
 
     def _on_service_principal_info_gone(self, _: ServicePrincipalInfoGoneEvent):
         logger.info("Credentials gone...")
-        self.unit.status = WaitingStatus("Waiting for relation")
+        self.unit.status = WaitingStatus("Waiting for relation.")
 
     @property
     def _peers(self):
@@ -77,7 +78,8 @@ class ApplicationCharm(CharmBase):
 
     def _on_update_status(self, _):
         service_principal_info = self.azure_service_principal_client.get_azure_service_principal_info()
-        logger.info(f"Azure service principal client info: {service_principal_info}")
+        if service_principal_info:
+            logger.debug(f"Azure service principal client info: {service_principal_info}")
 
 if __name__ == "__main__":
     main(ApplicationCharm)
