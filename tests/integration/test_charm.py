@@ -21,11 +21,10 @@ SECRET_IDENTIFIER = "test-secret"
 
 
 @pytest.mark.abort_on_fail
-@pytest.mark.setup
 def test_build_and_deploy_charm(
     juju: jubilant.Juju, azure_auth_charm_path: Path, test_charm_path: Path
 ):
-    """Test building and deploying the integrator and the test charm."""
+    """Tests building and deploying the integrator and the test charm."""
     juju.deploy(
         azure_auth_charm_path,
         app=APP_NAME,
@@ -99,5 +98,5 @@ def test_relation_broken(juju: jubilant.Juju):
 
     juju.wait(lambda status: jubilant.all_active(status, APP_NAME), error=jubilant.any_error)
 
-    # Test charm's status should change to Blocked
+    # Test that charm's status changes to Blocked
     juju.wait(lambda status: jubilant.all_blocked(status, TEST_APP_NAME), error=jubilant.any_error)
