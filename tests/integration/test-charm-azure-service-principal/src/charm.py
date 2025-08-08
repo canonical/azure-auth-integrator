@@ -17,7 +17,7 @@ from lib.azure_service_principal import (
 )
 from ops.charm import CharmBase, RelationJoinedEvent
 from ops.main import main
-from ops.model import ActiveStatus, WaitingStatus
+from ops.model import ActiveStatus, BlockedStatus
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class ApplicationCharm(CharmBase):
 
     def _on_start(self, _) -> None:
         """Only sets an waiting status."""
-        self.unit.status = WaitingStatus("Waiting for relation.")
+        self.unit.status = BlockedStatus("Waiting for relation.")
 
     def _on_relation_joined(self, _: RelationJoinedEvent):
         """On Azure credential relation joined."""
@@ -69,7 +69,7 @@ class ApplicationCharm(CharmBase):
 
     def _on_service_principal_info_gone(self, _: ServicePrincipalInfoGoneEvent):
         logger.info("Credentials gone...")
-        self.unit.status = WaitingStatus("Waiting for relation.")
+        self.unit.status = BlockedStatus("Waiting for relation.")
 
     def _on_update_status(self, _):
         service_principal_info = self.azure_service_principal_client.get_azure_service_principal_info()
