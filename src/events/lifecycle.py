@@ -94,4 +94,4 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         if not self.charm.unit.is_leader():
             return
 
-        self.azure_service_principal_manager.update(self.context.azure_service_principal)
+        self._update_provider_data()
