@@ -8,6 +8,7 @@ WAIT_TIMEOUT = 10 * 60
 
 logger = logging.getLogger(__name__)
 
+
 @pytest.fixture(scope="module")
 def juju(request: pytest.FixtureRequest):
     keep_models = bool(request.config.getoption("--keep-models"))
@@ -48,7 +49,12 @@ def azure_auth_charm_path() -> Path:
 def test_charm_path() -> Path:
     if not (
         path := next(
-            iter((Path.cwd() / "tests/integration/test-charm-azure-service-principal").glob("*.charm")), None
+            iter(
+                (Path.cwd() / "tests/integration/test-charm-azure-service-principal").glob(
+                    "*.charm"
+                )
+            ),
+            None,
         )
     ):
         raise FileNotFoundError("Could not find packed test charm.")
