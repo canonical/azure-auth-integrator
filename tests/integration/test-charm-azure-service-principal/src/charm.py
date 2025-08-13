@@ -47,7 +47,9 @@ class ApplicationCharm(CharmBase):
             self._on_service_principal_info_gone,
         )
         self.framework.observe(self.on.update_status, self._on_update_status)
-        self.framework.observe(self.on.get_azure_service_principal_info_action, self._on_get_service_principal_info)
+        self.framework.observe(
+            self.on.get_azure_service_principal_info_action, self._on_get_service_principal_info
+        )
 
     def _on_start(self, _) -> None:
         """Only sets an waiting status."""

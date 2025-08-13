@@ -49,7 +49,10 @@ def test_build_and_deploy_charm(
 @pytest.mark.abort_on_fail
 def test_config_options(juju: jubilant.Juju):
     """Tests proper handling of configuration parameters."""
-    juju.config(APP_NAME, {"subscription-id": SUBSCRIPTION_ID_TEST_VALUE, "tenant-id": TENANT_ID_TEST_VALUE})
+    juju.config(
+        APP_NAME,
+        {"subscription-id": SUBSCRIPTION_ID_TEST_VALUE, "tenant-id": TENANT_ID_TEST_VALUE},
+    )
 
     # Status should be blocked due to missing "credentials"
     status = juju.wait(
@@ -58,7 +61,7 @@ def test_config_options(juju: jubilant.Juju):
     assert status.apps[APP_NAME].app_status.message == "Missing parameters: ['credentials']"
 
     # Assert that configuring a secret that doesn't exist produces an error message
-    # Create a secret and immediately remove it 
+    # Create a secret and immediately remove it
     secret_uri = juju.add_secret("fake-secret", {"test-key": "test-value"})
     juju.remove_secret(secret_uri)
     juju.config(APP_NAME, {"credentials": secret_uri})
@@ -69,15 +72,11 @@ def test_config_options(juju: jubilant.Juju):
     assert status.apps[APP_NAME].app_status.message == f"The secret '{secret_uri}' does not exist."
 
     # Add a secret but don't grant permission, so status should stay blocked
-    secret_uri = juju.add_secret(
-        SECRET_IDENTIFIER, {"client-id": CLIENT_ID_TEST_VALUE}
-    )
+    secret_uri = juju.add_secret(SECRET_IDENTIFIER, {"client-id": CLIENT_ID_TEST_VALUE})
     juju.wait(jubilant.all_agents_idle)
     juju.config(APP_NAME, {"credentials": secret_uri})
     juju.wait(jubilant.all_agents_idle)
-    status = juju.wait(
-        lambda status: jubilant.all_blocked(status, APP_NAME)
-    )
+    status = juju.wait(lambda status: jubilant.all_blocked(status, APP_NAME))
     assert (
         status.apps[APP_NAME].app_status.message
         == f"Permission for secret '{secret_uri}' has not been granted."
@@ -88,9 +87,7 @@ def test_config_options(juju: jubilant.Juju):
     juju.wait(jubilant.all_agents_idle, delay=5.0)
     juju.config(APP_NAME, {"credentials": secret_uri})
     juju.wait(jubilant.all_agents_idle, delay=5.0)
-    status = juju.wait(
-        lambda status: jubilant.all_blocked(status, APP_NAME)
-    )
+    status = juju.wait(lambda status: jubilant.all_blocked(status, APP_NAME))
     assert (
         status.apps[APP_NAME].app_status.message
         == f"The key 'client-secret' was not found in secret '{secret_uri}'."
@@ -98,11 +95,10 @@ def test_config_options(juju: jubilant.Juju):
 
     # All credentials have been provided, status should now be active
     secret_uri = juju.update_secret(
-        SECRET_IDENTIFIER, {"client-id": CLIENT_ID_TEST_VALUE, "client-secret": CLIENT_SECRET_TEST_VALUE}
+        SECRET_IDENTIFIER,
+        {"client-id": CLIENT_ID_TEST_VALUE, "client-secret": CLIENT_SECRET_TEST_VALUE},
     )
-    status = juju.wait(
-        lambda status: jubilant.all_active(status, APP_NAME)
-    )
+    status = juju.wait(lambda status: jubilant.all_active(status, APP_NAME))
 
 
 @pytest.mark.abort_on_fail
@@ -151,10 +147,11 @@ def test_credentials_updated(juju: jubilant.Juju):
     result = juju.run(TEST_APP_UNIT_NAME, "get-azure-service-principal-info")
     assert result.results["subscription-id"] == SUBSCRIPTION_ID_NEW_VALUE
     assert result.results["tenant-id"] == TENANT_ID_TEST_VALUE
-    
+
     # Change the value of the secret
     juju.update_secret(
-        SECRET_IDENTIFIER, {"client-id": CLIENT_ID_TEST_VALUE, "client-secret": CLIENT_SECRET_NEW_VALUE}
+        SECRET_IDENTIFIER,
+        {"client-id": CLIENT_ID_TEST_VALUE, "client-secret": CLIENT_SECRET_NEW_VALUE},
     )
     juju.wait(jubilant.all_active)
 
