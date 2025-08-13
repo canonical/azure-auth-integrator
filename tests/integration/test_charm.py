@@ -98,6 +98,7 @@ def test_config_options(juju: jubilant.Juju):
         SECRET_IDENTIFIER,
         {"client-id": CLIENT_ID_TEST_VALUE, "client-secret": CLIENT_SECRET_TEST_VALUE},
     )
+    juju.wait(jubilant.all_agents_idle, delay=5.0)
     status = juju.wait(lambda status: jubilant.all_active(status, APP_NAME))
 
 
