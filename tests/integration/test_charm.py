@@ -24,7 +24,7 @@ SECRET_IDENTIFIER = "test-secret"
 def test_build_and_deploy_charm(
     juju: jubilant.Juju, azure_auth_charm_path: Path, test_charm_path: Path
 ):
-    """Tests building and deploying the integrator and the test charm, with proper statuses"""
+    """Tests building and deploying the integrator and the test charm, with proper statuses."""
     juju.deploy(
         azure_auth_charm_path,
         app=APP_NAME,
@@ -41,7 +41,6 @@ def test_build_and_deploy_charm(
 @pytest.mark.abort_on_fail
 def test_config_options(juju: jubilant.Juju):
     """Tests proper handling of configuration parameters."""
-
     juju.config(APP_NAME, {"subscription-id": "subscription-test", "tenant-id": "tenant-test"})
 
     # Status should be blocked due to missing "credentials"
@@ -60,7 +59,10 @@ def test_config_options(juju: jubilant.Juju):
     status = juju.wait(
         lambda status: jubilant.all_blocked(status, APP_NAME),
     )
-    assert status.apps[APP_NAME].app_status.message == f"Permission for secret '{secret_uri}' has not been granted."
+    assert (
+        status.apps[APP_NAME].app_status.message
+        == f"Permission for secret '{secret_uri}' has not been granted."
+    )
 
     juju.grant_secret(secret_uri, APP_NAME)
     # All credentials have been provided
