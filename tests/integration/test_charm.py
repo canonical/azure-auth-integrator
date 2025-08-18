@@ -81,12 +81,13 @@ def test_config_options(juju: jubilant.Juju):
         status.apps[APP_NAME].app_status.message
         == f"Permission for secret '{secret_uri}' has not been granted."
     )
+    juju.remove_secret(secret_uri)
 
-    # Don't provide all values for the secret, so status should stay blocked
+    # Add a secret but don't provide all values for the secret, so status should stay blocked
+    secret_uri = juju.add_secret(SECRET_IDENTIFIER, {"client-id": CLIENT_ID_TEST_VALUE})
     juju.grant_secret(secret_uri, APP_NAME)
-    juju.wait(jubilant.all_agents_idle, delay=10.0)
     juju.config(APP_NAME, {"credentials": secret_uri})
-    juju.wait(jubilant.all_agents_idle, delay=10.0)
+    juju.wait(jubilant.all_agents_idle, delay=5.0)
     status = juju.wait(lambda status: jubilant.all_blocked(status, APP_NAME))
     assert (
         status.apps[APP_NAME].app_status.message
