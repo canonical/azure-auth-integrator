@@ -1,3 +1,8 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+"""Fixtures used across the integration tests."""
+
 import logging
 from pathlib import Path
 
