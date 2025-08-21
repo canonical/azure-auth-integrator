@@ -10,14 +10,15 @@ the azure service principal requires-provides relation.
 
 import logging
 
+from ops.charm import ActionEvent, CharmBase, RelationJoinedEvent
+from ops.main import main
+from ops.model import ActiveStatus, BlockedStatus
+
 from lib.azure_service_principal import (
     AzureServicePrincipalRequirer,
     ServicePrincipalInfoChangedEvent,
     ServicePrincipalInfoGoneEvent,
 )
-from ops.charm import CharmBase, RelationJoinedEvent
-from ops.main import main
-from ops.model import ActiveStatus, WaitingStatus
 
 logger = logging.getLogger(__name__)
 
@@ -36,26 +37,23 @@ class ApplicationCharm(CharmBase):
 
         self.azure_service_principal_client = AzureServicePrincipalRequirer(self, RELATION_NAME)
 
-        # add relation
         self.framework.observe(
             self.azure_service_principal_client.on.service_principal_info_changed,
             self._on_service_principal_info_changed,
         )
-
-        self.framework.observe(
-            self.on[RELATION_NAME].relation_joined, self._on_relation_joined
-        )
-
+        self.framework.observe(self.on[RELATION_NAME].relation_joined, self._on_relation_joined)
         self.framework.observe(
             self.azure_service_principal_client.on.service_principal_info_gone,
             self._on_service_principal_info_gone,
         )
-
         self.framework.observe(self.on.update_status, self._on_update_status)
+        self.framework.observe(
+            self.on.get_azure_service_principal_info_action, self._on_get_service_principal_info
+        )
 
     def _on_start(self, _) -> None:
         """Only sets an waiting status."""
-        self.unit.status = WaitingStatus("Waiting for relation.")
+        self.unit.status = BlockedStatus("Waiting for relation.")
 
     def _on_relation_joined(self, _: RelationJoinedEvent):
         """On Azure credential relation joined."""
@@ -63,18 +61,31 @@ class ApplicationCharm(CharmBase):
         self.unit.status = ActiveStatus()
 
     def _on_service_principal_info_changed(self, e: ServicePrincipalInfoChangedEvent):
-        service_principal_info = self.azure_service_principal_client.get_azure_service_principal_info()
+        service_principal_info = (
+            self.azure_service_principal_client.get_azure_service_principal_info()
+        )
         if service_principal_info:
             logger.debug(f"Credentials changed. New credentials: {service_principal_info}")
 
     def _on_service_principal_info_gone(self, _: ServicePrincipalInfoGoneEvent):
-        logger.info("Credentials gone...")
-        self.unit.status = WaitingStatus("Waiting for relation.")
+        logger.debug("Credentials gone...")
+        self.unit.status = BlockedStatus("Waiting for relation.")
 
     def _on_update_status(self, _):
-        service_principal_info = self.azure_service_principal_client.get_azure_service_principal_info()
+        service_principal_info = (
+            self.azure_service_principal_client.get_azure_service_principal_info()
+        )
         if service_principal_info:
             logger.debug(f"Azure service principal client info: {service_principal_info}")
+
+    def _on_get_service_principal_info(self, event: ActionEvent):
+        service_principal_info = (
+            self.azure_service_principal_client.get_azure_service_principal_info()
+        )
+        if service_principal_info:
+            event.set_results(service_principal_info)
+            logger.debug(f"Azure service principal client info: {service_principal_info}")
+
 
 if __name__ == "__main__":
     main(ApplicationCharm)

@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install tox & poetry
         run: |
           pipx install tox
@@ -34,3 +34,41 @@ jobs:
         run: |
           tox run -e lint
 
+  build:
+    strategy:
+      matrix:
+        path:
+          - .
+          - tests/integration/test-charm-azure-service-principal
+    name: Build charm | ${{ matrix.path }}
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v29.0.0
+    with:
+      path-to-charm-directory: ${{ matrix.path }}
+      cache: false
+
+  integration-test:
+    name: Run charm integration tests
+    needs:
+      - lint
+      - build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup operator environment
+        uses: charmed-kubernetes/actions-operator@main
+        with:
+          provider: microk8s
+          channel: 1.32-strict/stable
+          juju-channel: 3.6/stable
+      - name: Download packed charm(s)
+        uses: actions/download-artifact@v5
+        with:
+          artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
+          merge-multiple: true
+      - name: Install tox & poetry
+        run: |
+          pipx install tox
+          pipx install poetry
+      - name: Run integration tests
+        run: tox -e integration
