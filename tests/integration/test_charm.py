@@ -1,7 +1,7 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Azure Service Principal provider related event handlers."""
+"""Integration tests for the azure-auth-integrator charm."""
 
 import logging
 from pathlib import Path
