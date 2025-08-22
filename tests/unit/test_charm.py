@@ -51,16 +51,16 @@ def test_on_start_blocked(ctx: Context[AzureAuthIntegratorCharm], base_state: St
     assert "credentials" in status.message
 
 
-def test_on_start_no_secret_access_blocked(ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict):
+def test_on_start_no_secret_access_blocked(
+    ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
+):
     """Tests that the charm's status is blocked if not granted secret access."""
     # Arrange
     charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
     charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
     # This secret does not exist
     charm_configuration["options"]["credentials"]["default"] = "secret:1a2b3c4d5e6f7g8h9i0j"
-    ctx = Context(
-        AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0
-    )
+    ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
     state_in = base_state
 
     # Act
@@ -68,7 +68,7 @@ def test_on_start_no_secret_access_blocked(ctx: Context[AzureAuthIntegratorCharm
 
     # Assert
     assert isinstance(status := state_out.unit_status, BlockedStatus)
-    assert "does not exist" in status.message    
+    assert "does not exist" in status.message
 
 
 def test_on_start_active(
