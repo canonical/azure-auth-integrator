@@ -92,7 +92,7 @@ def test_config_options(juju: jubilant.Juju):
     secret_uri = juju.add_secret(SECRET_IDENTIFIER, {"client-id": CLIENT_ID_TEST_VALUE})
     juju.grant_secret(secret_uri, APP_NAME)
     juju.config(APP_NAME, {"credentials": secret_uri})
-    juju.wait(jubilant.all_agents_idle, delay=5.0)
+    juju.wait(jubilant.all_agents_idle, delay=10.0)
     status = juju.wait(lambda status: jubilant.all_blocked(status, APP_NAME))
     assert (
         status.apps[APP_NAME].app_status.message
