@@ -70,6 +70,30 @@ def test_on_start_no_secret_access_blocked(
     assert "does not exist" in status.message
 
 
+def test_on_start_missing_secret_values(
+    ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
+):
+    """Tests that the charm's status is blocked if the secret is missing the required values."""
+    # Arrange
+    credentials_secret = Secret(
+        tracked_content={
+            "client-id": "clientid",
+        }
+    )
+    charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
+    charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
+    charm_configuration["options"]["credentials"]["default"] = credentials_secret.id
+    ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
+    state_in = dataclasses.replace(base_state, secrets={credentials_secret})
+
+    # Act
+    state_out = ctx.run(ctx.on.start(), state_in)
+
+    # Assert
+    assert isinstance(status := state_out.unit_status, BlockedStatus)
+    assert "was not found in secret" in status.message
+
+
 def test_on_start_active(
     ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
 ):
