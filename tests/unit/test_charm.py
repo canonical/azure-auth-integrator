@@ -70,10 +70,10 @@ def test_on_start_no_secret_access_blocked(
     assert "does not exist" in status.message
 
 
-def test_on_start_missing_secret_values(
+def test_on_start_missing_secret_fields(
     ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
 ):
-    """Tests that the charm's status is blocked if the secret is missing the required values."""
+    """Tests that the charm's status is blocked if the secret is missing the required fields."""
     # Arrange
     credentials_secret = Secret(
         tracked_content={
