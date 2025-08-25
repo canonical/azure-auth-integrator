@@ -8,11 +8,10 @@ import json
 import logging
 from pathlib import Path
 
-from ops.model import ActiveStatus, BlockedStatus
-from ops.testing import Context, Relation, Secret, State
 import pytest
 import yaml
-
+from ops.model import ActiveStatus, BlockedStatus
+from ops.testing import Context, Relation, Secret, State
 from src.charm import AzureAuthIntegratorCharm
 
 CONFIG = yaml.safe_load(Path("./config.yaml").read_text())
