@@ -33,6 +33,9 @@ class Context(WithLogging):
             return None
 
         return AzureServicePrincipalInfo(
+            storage_account=self.charm_config.get("storage-account"),
+            container=self.charm_config.get("container"),
+            path=self.charm_config.get("path"),
             subscription_id=self.charm_config.get("subscription-id"),
             tenant_id=self.charm_config.get("tenant-id"),
             client_id=secret_dict.get("client-id"),

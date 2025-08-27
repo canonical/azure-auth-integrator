@@ -25,6 +25,9 @@ TEST_APP_UNIT_NAME = f"{TEST_APP_NAME}/0"
 RELATION_NAME = "azure-service-principal-credentials"
 SECRET_IDENTIFIER = "test-secret"
 
+STORAGE_ACCOUNT_TEST_VALUE = "storageaccounttest"
+CONTAINER_TEST_VALUE = "container-test"
+PATH_TEST_VALUE = "path/test"
 SUBSCRIPTION_ID_TEST_VALUE = "subscription-test"
 TENANT_ID_TEST_VALUE = "tenant-test"
 CLIENT_ID_TEST_VALUE = "client-id-test"
@@ -56,7 +59,12 @@ def test_config_options(juju: jubilant.Juju):
     """Tests proper handling of configuration parameters."""
     juju.config(
         APP_NAME,
-        {"subscription-id": SUBSCRIPTION_ID_TEST_VALUE, "tenant-id": TENANT_ID_TEST_VALUE},
+        {
+            "storage-account": STORAGE_ACCOUNT_TEST_VALUE,
+            "container": CONTAINER_TEST_VALUE,
+            "subscription-id": SUBSCRIPTION_ID_TEST_VALUE,
+            "tenant-id": TENANT_ID_TEST_VALUE,
+        },
     )
 
     # Status should be blocked due to missing "credentials"
@@ -118,10 +126,15 @@ def test_relation_creation(juju: jubilant.Juju):
     azure_credentials = get_application_data(juju, TEST_APP_NAME, RELATION_NAME)
     logger.debug(azure_credentials)
 
+    assert "storage-account" in azure_credentials
+    assert "container" in azure_credentials
+    assert "path" not in azure_credentials
     assert "subscription-id" in azure_credentials
     assert "tenant-id" in azure_credentials
     assert "secret-extra" in azure_credentials
 
+    assert azure_credentials["storage-account"] == STORAGE_ACCOUNT_TEST_VALUE
+    assert azure_credentials["container"] == CONTAINER_TEST_VALUE
     assert azure_credentials["subscription-id"] == SUBSCRIPTION_ID_TEST_VALUE
     assert azure_credentials["tenant-id"] == TENANT_ID_TEST_VALUE
 
@@ -132,6 +145,8 @@ def test_relation_creation(juju: jubilant.Juju):
 
     # Ensure data exists in the requirer side
     result = juju.run(TEST_APP_UNIT_NAME, "get-azure-service-principal-info")
+    assert result.results["storage-account"] == STORAGE_ACCOUNT_TEST_VALUE
+    assert result.results["container"] == CONTAINER_TEST_VALUE
     assert result.results["subscription-id"] == SUBSCRIPTION_ID_TEST_VALUE
     assert result.results["tenant-id"] == TENANT_ID_TEST_VALUE
     assert result.results["client-id"] == CLIENT_ID_TEST_VALUE
@@ -142,18 +157,24 @@ def test_relation_creation(juju: jubilant.Juju):
 def test_credentials_updated(juju: jubilant.Juju):
     """Tests updating the credentials and having the updates propagated to the relation."""
     # Change the value of the config
-    juju.config(APP_NAME, {"subscription-id": SUBSCRIPTION_ID_NEW_VALUE})
+    juju.config(APP_NAME, {"subscription-id": SUBSCRIPTION_ID_NEW_VALUE, "path": PATH_TEST_VALUE})
     juju.wait(jubilant.all_active)
 
     # Ensure data exists in the relation databag
     azure_credentials = get_application_data(juju, TEST_APP_NAME, RELATION_NAME)
+    assert azure_credentials["storage-account"] == STORAGE_ACCOUNT_TEST_VALUE
+    assert azure_credentials["container"] == CONTAINER_TEST_VALUE
     assert azure_credentials["subscription-id"] == SUBSCRIPTION_ID_NEW_VALUE
     assert azure_credentials["tenant-id"] == TENANT_ID_TEST_VALUE
+    assert azure_credentials["path"] == PATH_TEST_VALUE
 
     # Ensure data exists in the requirer side
     result = juju.run(TEST_APP_UNIT_NAME, "get-azure-service-principal-info")
+    assert result.results["storage-account"] == STORAGE_ACCOUNT_TEST_VALUE
+    assert result.results["container"] == CONTAINER_TEST_VALUE
     assert result.results["subscription-id"] == SUBSCRIPTION_ID_NEW_VALUE
     assert result.results["tenant-id"] == TENANT_ID_TEST_VALUE
+    assert result.results["path"] == PATH_TEST_VALUE
 
     # Change the value of the secret
     juju.update_secret(
@@ -164,9 +185,12 @@ def test_credentials_updated(juju: jubilant.Juju):
 
     # Ensure data exists in the relation databag
     azure_credentials = get_application_data(juju, TEST_APP_NAME, RELATION_NAME)
+    assert "storage-account" in azure_credentials
+    assert "container" in azure_credentials
     assert "subscription-id" in azure_credentials
     assert "tenant-id" in azure_credentials
     assert "secret-extra" in azure_credentials
+    assert "path" in azure_credentials
     secret_uri = azure_credentials["secret-extra"]
     secret_data = juju.show_secret(secret_uri, reveal=True)
     assert secret_data.content["client-id"] == CLIENT_ID_TEST_VALUE

@@ -6,6 +6,8 @@
 AZURE_SERVICE_PRINCIPAL_RELATION_NAME = "azure-service-principal-credentials"
 
 AZURE_SERVICE_PRINCIPAL_MANDATORY_OPTIONS = [
+    "container",
+    "storage-account",
     "subscription-id",
     "tenant-id",
     "credentials",

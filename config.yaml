@@ -1,4 +1,14 @@
 options:
+  container:
+    type: string
+    description: The name of the Azure Storage Container.
+  storage-account:
+    type: string
+    description: The name of the Azure storage account.
+  path:
+    type: string
+    description: The path inside the bucket/container to store objects.
+    default: ''
   subscription-id:
     type: string
     description: |

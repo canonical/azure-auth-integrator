@@ -57,6 +57,8 @@ def test_on_start_no_secret_access_blocked(
     # Arrange
     charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
     charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
+    charm_configuration["options"]["storage-account"]["default"] = "storageaccount"
+    charm_configuration["options"]["container"]["default"] = "containername"
     # This secret does not exist
     charm_configuration["options"]["credentials"]["default"] = "secret:1a2b3c4d5e6f7g8h9i0j"
     ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
@@ -82,6 +84,8 @@ def test_on_start_missing_secret_fields(
     )
     charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
     charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
+    charm_configuration["options"]["storage-account"]["default"] = "storageaccount"
+    charm_configuration["options"]["container"]["default"] = "containername"
     charm_configuration["options"]["credentials"]["default"] = credentials_secret.id
     ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
     state_in = dataclasses.replace(base_state, secrets={credentials_secret})
@@ -107,6 +111,8 @@ def test_on_start_active(
     )
     charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
     charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
+    charm_configuration["options"]["storage-account"]["default"] = "storageaccount"
+    charm_configuration["options"]["container"]["default"] = "containername"
     charm_configuration["options"]["credentials"]["default"] = credentials_secret.id
     ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
     state_in = dataclasses.replace(base_state, secrets={credentials_secret})
@@ -131,6 +137,9 @@ def test_relation_application_data(
     )
     charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
     charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
+    charm_configuration["options"]["storage-account"]["default"] = "storageaccount"
+    charm_configuration["options"]["container"]["default"] = "containername"
+    charm_configuration["options"]["path"]["default"] = "test/path"
     charm_configuration["options"]["credentials"]["default"] = credentials_secret.id
     ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
     azure_service_principal_relation = Relation(endpoint="azure-service-principal-credentials")
@@ -148,3 +157,6 @@ def test_relation_application_data(
     assert provider_data["tenant-id"] == "tenantid"
     assert provider_data["client-id"] == "clientid"
     assert provider_data["client-secret"] == "clientsecret"
+    assert provider_data["storage-account"] == "storageaccount"
+    assert provider_data["container"] == "containername"
+    assert provider_data["path"] == "test/path"

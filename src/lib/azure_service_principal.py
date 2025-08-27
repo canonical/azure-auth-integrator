@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 
 AZURE_SERVICE_PRINCIPAL_REQUIRED_INFO = [
+    "storage-account",
+    "container",
     "subscription-id",
     "tenant-id",
     "client-id",
