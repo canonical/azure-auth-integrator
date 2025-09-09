@@ -19,7 +19,7 @@ Then, configure the charm with your Azure credentials:
 juju config azure-auth-integrator subscription-id=<your-subscription-id> tenant-id=<your-tenant-id>
 ```
 
-Requirer charms also need the `client-id` and `client-secret` that uniquely identify your app. To pass this sensitive information to the charm, add a Juju secret with these values, and grant access to `azure-auth-integrator`:
+Requirer charms also need the `client-id` and `client-secret` which uniquely identify your app. To pass this sensitive information to the charm, add a Juju secret with these values, and grant access to `azure-auth-integrator`:
 ```shell
 juju add-secret my-secret client-id=<your-client-id> client-secret=<your-client-password>
 juju grant-secret my-secret azure-auth-integrator
@@ -36,3 +36,16 @@ juju integrate azure-auth-integrator <requirer-charm>
 ```
 
 The requirer charm should have access to all credentials needed to access your Azure resources.
+
+## Community and support
+
+`azure-auth-integrator` is an open-source project that welcomes community contributions, suggestions,
+fixes and constructive feedback.
+
+- Report [issues](https://github.com/canonical/azure-auth-integrator/issues)
+- [Contact us on Matrix](https://matrix.to/#/#charmhub-data-platform:ubuntu.com)
+- Explore [Canonical Data & AI solutions](https://canonical.com/data)
+
+## License and copyright
+
+`azure-auth-integrator` is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](LICENSE) for more information.
