@@ -24,7 +24,7 @@ jobs:
       - name: Check libs
         uses: canonical/charming-actions/check-libraries@2.7.0
         with:
-          # FIXME: CHARMHUB_TOKEN will expire in 2026-08-26
+          # FIXME: CHARMHUB_TOKEN will expire in 2026-09-09
           credentials: "${{ secrets.CHARMHUB_TOKEN }}"
           github-token: "${{ secrets.CI_GITHUB_TOKEN }}"
   ci-tests:
@@ -40,7 +40,7 @@ jobs:
       matrix:
         charm:
           - path: .
-            channel: latest/edge
+            channel: 1/edge
     needs:
       - lib-check
       - ci-tests
