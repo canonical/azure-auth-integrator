@@ -27,7 +27,7 @@ jobs:
         with:
           # FIXME: CHARMHUB_TOKEN will expire in 2026-09-09
           credentials: "${{ secrets.CHARMHUB_TOKEN }}"
-          github-token: "${{ secrets.CI_GITHUB_TOKEN }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
   ci-tests:
     needs:
       - lib-check
