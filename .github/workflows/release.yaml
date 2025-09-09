@@ -47,7 +47,6 @@ jobs:
     uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v35.0.2
     with:
       track: ${{ matrix.charm.track }}
-      channel: ${{ matrix.charm.channel }}
       artifact-prefix: ${{ needs.ci-tests.outputs.artifact-prefix }}
       path-to-charm-directory: ${{ matrix.charm.path }}
     secrets:
