@@ -1,0 +1,56 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: Release to Charmhub
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lib-check:
+    name: Check libraries
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - run: |
+          # Workaround for https://github.com/canonical/charmcraft/issues/1389#issuecomment-1880921728
+          touch requirements.txt
+      - name: Check libs
+        uses: canonical/charming-actions/check-libraries@2.7.0
+        with:
+          # FIXME: CHARMHUB_TOKEN will expire in 2026-09-09
+          credentials: "${{ secrets.CHARMHUB_TOKEN }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+  ci-tests:
+    needs:
+      - lib-check
+    name: Tests
+    uses: ./.github/workflows/ci.yaml
+    secrets: inherit
+
+  release:
+    name: Release charm
+    strategy:
+      matrix:
+        charm:
+          - path: .
+            track: 1
+    needs:
+      - lib-check
+      - ci-tests
+    uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v35.0.2
+    with:
+      track: ${{ matrix.charm.track }}
+      artifact-prefix: ${{ needs.ci-tests.outputs.artifact-prefix }}
+      path-to-charm-directory: ${{ matrix.charm.path }}
+    secrets:
+      charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
+    permissions:
+      contents: write # Needed to create git tags
