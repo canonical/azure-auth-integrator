@@ -35,7 +35,7 @@ After deploying the requirer charm, integrate it with `azure-auth-integrator` by
 juju integrate azure-auth-integrator <requirer-charm>
 ```
 
-The requirer charm should have access to all credentials needed to access your Azure resources.
+The requirer charm should now have access to all credentials needed to access your Azure resources.
 
 ## Community and support
 
