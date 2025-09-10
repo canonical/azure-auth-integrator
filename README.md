@@ -7,7 +7,7 @@
 
 `azure-auth-integrator` is an integrator charm responsible for relaying the credentials required to interact with Microsoft [Entra ID](https://learn.microsoft.com/en-us/entra/fundamentals/what-is-entra) using [Service principals](https://learn.microsoft.com/en-us/entra/identity-platform/app-objects-and-service-principals?tabs=browser).
 
-## Basic usage
+## Get started
 
 First, deploy `azure-auth-integrator` by running:
 ```shell
