@@ -48,4 +48,4 @@ fixes and constructive feedback.
 
 ## License and copyright
 
-`azure-auth-integrator` is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](LICENSE) for more information.
+`azure-auth-integrator` is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](https://www.apache.org/licenses/LICENSE-2.0) for more information.
