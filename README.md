@@ -9,7 +9,7 @@
 
 ## Get started
 
-First, deploy `azure-auth-integrator` by running:
+Deploy `azure-auth-integrator` by running:
 ```shell
 juju deploy azure-auth-integrator --channel 1/edge
 ```
