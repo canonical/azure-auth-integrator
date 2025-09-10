@@ -70,7 +70,7 @@ def test_config_options(juju: jubilant.Juju):
     secret_uri = juju.add_secret("fake-secret", {"test-key": "test-value"})
     juju.remove_secret(secret_uri)
     juju.config(APP_NAME, {"credentials": secret_uri})
-    juju.wait(jubilant.all_agents_idle)
+    juju.wait(jubilant.all_agents_idle, delay=5.0)
     status = juju.wait(
         lambda status: jubilant.all_blocked(status, APP_NAME),
     )
