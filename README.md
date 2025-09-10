@@ -42,7 +42,7 @@ The requirer charm should have access to all credentials needed to access your A
 `azure-auth-integrator` is an open-source project that welcomes community contributions, suggestions,
 fixes and constructive feedback.
 
-- Report [issues](https://github.com/canonical/azure-auth-integrator/issues)
+- Report [issues](https://github.com/canonical/azure-auth-integrator/issues).
 - [Contact us on Matrix](https://matrix.to/#/#charmhub-data-platform:ubuntu.com)
 - Explore [Canonical Data & AI solutions](https://canonical.com/data)
 
