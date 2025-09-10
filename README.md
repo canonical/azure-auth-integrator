@@ -19,7 +19,7 @@ Now configure it with your Azure credentials:
 juju config azure-auth-integrator subscription-id=<your-subscription-id> tenant-id=<your-tenant-id>
 ```
 
-Requirer charms also need the `client-id` and `client-secret` which uniquely identify your app. To pass this sensitive information to the charm, add a Juju secret with these values, and grant access to `azure-auth-integrator`:
+Requirer charms also need the `client-id` and `client-secret` which uniquely identify your app. To pass this sensitive information to the charm, add a Juju secret with these values, and grant access to `azure-auth-integrator` as follows:
 ```shell
 juju add-secret my-secret client-id=<your-client-id> client-secret=<your-client-password>
 juju grant-secret my-secret azure-auth-integrator
