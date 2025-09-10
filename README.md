@@ -14,7 +14,7 @@ Deploy `azure-auth-integrator` by running:
 juju deploy azure-auth-integrator --channel 1/edge
 ```
 
-Then, configure the charm with your Azure credentials:
+Now configure it with your Azure credentials:
 ```shell
 juju config azure-auth-integrator subscription-id=<your-subscription-id> tenant-id=<your-tenant-id>
 ```
