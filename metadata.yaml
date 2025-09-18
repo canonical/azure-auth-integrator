@@ -1,9 +1,10 @@
 name: azure-auth-integrator
 
-summary: Charm for providing access to Azure service principal credentials.
+summary: Integrator charm for providing access to Azure service principal credentials in other charms.
 
 description: |
-  Charm for providing access to Azure service principal credentials
+  azure-auth-integrator is an integrator charm responsible for relaying the credentials required to interact with Microsoft Entra ID using service principals.
+docs: https://discourse.charmhub.io/t/18854
 
 provides:
   azure-service-principal-credentials:
