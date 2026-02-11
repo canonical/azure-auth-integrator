@@ -4,13 +4,6 @@
 """Azure Service Principal provider related event handlers."""
 
 import ops
-from charms.data_platform_libs.v1.data_interfaces import (
-    DataContractV1,
-    RequirerCommonModel,
-    ResourceProviderEventHandler,
-    ResourceRequestedEvent,
-    build_model,
-)
 from ops import CharmBase
 from ops.charm import ConfigChangedEvent
 
@@ -18,7 +11,8 @@ from constants import AZURE_SERVICE_PRINCIPAL_RELATION_NAME
 from core.context import Context
 from events.base import BaseEventHandler
 from lib.azure_service_principal import (
-    AzureServicePrincipalProviderModel,
+    AzureServicePrincipalProvider,
+    ResourceRequestedEvent
 )
 from utils.logging import WithLogging
 
@@ -32,8 +26,8 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         self.charm = charm
         self.context = context
 
-        self.azure_service_principal_provider = ResourceProviderEventHandler(
-            self.charm, AZURE_SERVICE_PRINCIPAL_RELATION_NAME, RequirerCommonModel
+        self.azure_service_principal_provider = AzureServicePrincipalProvider(
+            self.charm, AZURE_SERVICE_PRINCIPAL_RELATION_NAME
         )
 
         self.framework.observe(self.charm.on.update_status, self._on_update_status)
@@ -79,26 +73,11 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
 
     def _update_provider_data(self):
         """Update the contents of the relation data bag."""
-        if (
-            len(self.azure_service_principal_provider.relations) > 0
-            and self.context.azure_service_principal
-        ):
-            self.logger.debug("Updating the provider data.")
-            data = self.context.azure_service_principal.to_dict()
-            for relation in self.azure_service_principal_provider.relations:
-                model = build_model(
-                    self.azure_service_principal_provider.interface.repository(
-                        relation.id, relation.app
-                    ),
-                    DataContractV1[AzureServicePrincipalProviderModel],
-                )
-                for request in model.requests:
-                    request.subscription_id = data["subscription-id"]
-                    request.tenant_id = data["tenant-id"]
-                    for key in ("client-id", "client-secret"):
-                        setattr(request, key, data[key])
-
-                self.azure_service_principal_provider.interface.write_model(relation.id, model)
+        if not self.context.azure_service_principal:
+            return
+        self.logger.debug("Updating the provider data.")
+        data = self.context.azure_service_principal.to_dict()
+        self.azure_service_principal_provider.update_provider_data(data)
 
     def _on_azure_service_principal_resource_requested(self, event: ResourceRequestedEvent):
         """Handle the data_interfaces `resource requested` event."""
@@ -107,16 +86,16 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
             return
 
         self._update_provider_data()
-        if not self.context.azure_service_principal:
-            return
-        data = self.context.azure_service_principal.to_dict()
-        response = AzureServicePrincipalProviderModel(
-            salt=event.request.salt,
-            request_id=event.request.request_id,
-            resource="azure-service-principal",
-            subscription_id=data["subscription-id"],
-            tenant_id=data["tenant-id"],
-            client_id=data["client-id"],
-            client_secret=data["client-secret"],
-        )
-        self.azure_service_principal_provider.set_response(event.relation.id, response)
+        # if not self.context.azure_service_principal:
+        #     return
+        # data = self.context.azure_service_principal.to_dict()
+        # response = AzureServicePrincipalProviderModel(
+        #     salt=event.request.salt,
+        #     request_id=event.request.request_id,
+        #     resource="azure-service-principal",
+        #     subscription_id=data["subscription-id"],
+        #     tenant_id=data["tenant-id"],
+        #     client_id=data["client-id"],
+        #     client_secret=data["client-secret"],
+        # )
+        # self.azure_service_principal_provider.set_response(event.relation.id, response)
