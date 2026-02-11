@@ -4,6 +4,13 @@
 """Azure Service Principal provider related event handlers."""
 
 import ops
+from charms.data_platform_libs.v1.data_interfaces import (
+    DataContractV1,
+    RequirerCommonModel,
+    ResourceProviderEventHandler,
+    ResourceRequestedEvent,
+    build_model,
+)
 from ops import CharmBase
 from ops.charm import ConfigChangedEvent
 
@@ -12,15 +19,6 @@ from core.context import Context
 from events.base import BaseEventHandler
 from lib.azure_service_principal import (
     AzureServicePrincipalProviderModel,
-    AzureServicePrincipalRequirerModel,
-)
-from charms.data_platform_libs.v1.data_interfaces import (
-    DataContractV1,
-    RequirerCommonModel,
-    ResourceProviderEventHandler,
-    ResourceProviderModel,
-    ResourceRequestedEvent,
-    build_model
 )
 from utils.logging import WithLogging
 
@@ -34,7 +32,9 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         self.charm = charm
         self.context = context
 
-        self.azure_service_principal_provider = ResourceProviderEventHandler(self.charm, AZURE_SERVICE_PRINCIPAL_RELATION_NAME, RequirerCommonModel)
+        self.azure_service_principal_provider = ResourceProviderEventHandler(
+            self.charm, AZURE_SERVICE_PRINCIPAL_RELATION_NAME, RequirerCommonModel
+        )
 
         self.framework.observe(self.charm.on.update_status, self._on_update_status)
         self.framework.observe(self.charm.on.config_changed, self._on_config_changed)
@@ -83,25 +83,26 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
             len(self.azure_service_principal_provider.relations) > 0
             and self.context.azure_service_principal
         ):
-            self.logger.info("Updating the provider data.")
+            self.logger.debug("Updating the provider data.")
             data = self.context.azure_service_principal.to_dict()
-            self.logger.info(data)
             for relation in self.azure_service_principal_provider.relations:
-                model = build_model(self.azure_service_principal_provider.interface.repository(
-                    relation.id, relation.app), DataContractV1[AzureServicePrincipalProviderModel])
-                self.logger.info(model)
+                model = build_model(
+                    self.azure_service_principal_provider.interface.repository(
+                        relation.id, relation.app
+                    ),
+                    DataContractV1[AzureServicePrincipalProviderModel],
+                )
                 for request in model.requests:
-                    self.logger.info(request)
-                    request.subscription_id=data["subscription-id"]
-                    request.tenant_id=data["tenant-id"]
+                    request.subscription_id = data["subscription-id"]
+                    request.tenant_id = data["tenant-id"]
                     for key in ("client-id", "client-secret"):
                         setattr(request, key, data[key])
-                        
+
                 self.azure_service_principal_provider.interface.write_model(relation.id, model)
 
     def _on_azure_service_principal_resource_requested(self, event: ResourceRequestedEvent):
         """Handle the data_interfaces `resource requested` event."""
-        self.logger.info("On resource-requested")
+        self.logger.debug("Handling resource-requested event.")
         if not self.charm.unit.is_leader():
             return
 
@@ -116,6 +117,6 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
             subscription_id=data["subscription-id"],
             tenant_id=data["tenant-id"],
             client_id=data["client-id"],
-            client_secret=data["client-secret"]
+            client_secret=data["client-secret"],
         )
         self.azure_service_principal_provider.set_response(event.relation.id, response)

@@ -17,7 +17,7 @@ from ops.model import ActiveStatus, BlockedStatus
 from lib.azure_service_principal import (
     AzureServicePrincipalRequirer,
     ServicePrincipalInfoChangedEvent,
-    ServicePrincipalInfoGoneEvent
+    ServicePrincipalInfoGoneEvent,
 )
 
 logger = logging.getLogger(__name__)
