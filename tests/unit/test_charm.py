@@ -139,7 +139,7 @@ def test_relation_application_data(
     )
 
     # Act
-    state_out = ctx.run(ctx.on.relation_joined(azure_service_principal_relation), state_in)
+    state_out = ctx.run(ctx.on.relation_created(azure_service_principal_relation), state_in)
 
     # Assert
     assert state_out.unit_status == ActiveStatus()
