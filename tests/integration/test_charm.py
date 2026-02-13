@@ -9,10 +9,7 @@ from pathlib import Path
 import jubilant
 import pytest
 import yaml
-from helpers import (
-    get_application_data,
-    get_credentials
-)
+from helpers import get_application_data, get_credentials
 
 logger = logging.getLogger(__name__)
 # This function it too verbose

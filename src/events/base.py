@@ -3,7 +3,7 @@
 
 """Base utilities exposing common functionalities for all Events classes."""
 
-from ops import Model, Object, StatusBase
+from ops import Object, StatusBase
 from ops.model import ActiveStatus, BlockedStatus
 
 from constants import AZURE_SERVICE_PRINCIPAL_MANDATORY_OPTIONS

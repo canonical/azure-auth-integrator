@@ -38,6 +38,7 @@ def get_application_data(juju: jubilant.Juju, app_name: str, relation_name: str)
 
     return relation_data[0]["application-data"]
 
+
 def get_credentials(app_data: str):
     """Retrieves the credentials from the application data.
 
