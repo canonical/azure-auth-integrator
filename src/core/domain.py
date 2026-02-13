@@ -9,6 +9,7 @@ from dataclasses import dataclass
 @dataclass
 class AzureServicePrincipalInfo:
     """Azure service principal parameters."""
+
     subscription_id: str = ""
     tenant_id: str = ""
     client_id: str = ""
@@ -22,6 +23,7 @@ class AzureServicePrincipalInfo:
         self.client_secret = self.client_secret or ""
 
     def to_dict(self) -> dict:
+        """Return data as dictionary, ensuring all values are string."""
         return {
             "subscription-id": self.subscription_id,
             "tenant-id": self.tenant_id,

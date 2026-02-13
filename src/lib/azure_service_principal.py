@@ -1,8 +1,6 @@
-import hashlib
 import logging
 
 from charms.data_platform_libs.v1.data_interfaces import (
-    AuthenticationUpdatedEvent,
     DataContractV1,
     ExtraSecretStr,
     RequirerCommonModel,
@@ -11,7 +9,6 @@ from charms.data_platform_libs.v1.data_interfaces import (
     ResourceRequirerEventHandler,
     ResourceRequestedEvent,
     build_model,
-    get_encoded_dict,
 )
 from ops.charm import (
     CharmBase,
@@ -25,7 +22,6 @@ from ops.model import Relation
 
 from pydantic import (
     Field,
-    TypeAdapter
 )
 
 
@@ -39,17 +35,11 @@ AZURE_SERVICE_PRINCIPAL_REQUIRED_INFO = [
     "client-secret",
 ]
 
-def gen_hash(resource_name: str, salt: str) -> str:
-    """Generates a consistent hash based on the resource name and salt."""
-    hasher = hashlib.sha256()
-    hasher.update(f"{resource_name}:{salt}".encode())
-    return hasher.hexdigest()[:16]
 
 class ServicePrincipalEvent(RelationEvent):
     """Base class for Azure service principal events."""
 
     pass
-
 
 
 class ServicePrincipalInfoChangedEvent(ServicePrincipalEvent):
@@ -69,7 +59,6 @@ class AzureServicePrincipalRequirerEvents(CharmEvents):
 
     service_principal_info_changed = EventSource(ServicePrincipalInfoChangedEvent)
     service_principal_info_gone = EventSource(ServicePrincipalInfoGoneEvent)
-    authentication_updated = EventSource(AuthenticationUpdatedEvent)
 
 
 class AzureServicePrincipalRequirerModel(RequirerCommonModel):
@@ -91,6 +80,8 @@ class AzureServicePrincipalProviderModel(ResourceProviderModel):
 
 
 class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
+    """The requirer side of Azure service principal relation."""
+
     on = AzureServicePrincipalRequirerEvents()  # pyright: ignore[reportAssignmentType]
 
     def __init__(
@@ -114,7 +105,6 @@ class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
             self.charm.on[self.relation_name].relation_changed,
             self._on_relation_changed_event,
         )
-
 
     def get_azure_service_principal_info(self):
         """Return the Azure service principal info as a dictionary."""
@@ -143,45 +133,32 @@ class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
 
     def _on_relation_changed_event(self, event: RelationChangedEvent) -> None:
         """Notify the charm about the presence of Azure service principal credentials."""
+        super()._on_relation_changed_event(event)
         logger.info(f"Azure service principal relation ({event.relation.name}) changed...")
 
-        repository = self.interface.repository(event.relation.id, event.app)
-        data = repository.get_field("data")
-        response_model = self.interface.build_model(event.relation.id, component=event.app)
-        request_map = TypeAdapter(dict[str, self._request_model]).validate_json(data)
+        # check if the mandatory options are in the relation data
+        contains_required_options = True
+        credentials = self.get_azure_service_principal_info()
+        missing_options = []
+        for configuration_option in AZURE_SERVICE_PRINCIPAL_REQUIRED_INFO:
+            if configuration_option not in credentials:
+                contains_required_options = False
+                missing_options.append(configuration_option)
 
-        for response in response_model.requests:
-            response_id = response.request_id or gen_hash(response.resource, response.salt)
-            request = request_map.get(response_id, None)
-            if not request:
-                raise ValueError(
-                    f"No request matching the response with response_id {response_id}"
-                )
-            diff = self.compute_diff(event.relation, response, repository, store=False)
-
-            # check if the mandatory options are in the relation data
-            contains_required_options = True
-            credentials = self.get_azure_service_principal_info()
-            missing_options = []
-            for configuration_option in AZURE_SERVICE_PRINCIPAL_REQUIRED_INFO:
-                if configuration_option not in credentials:
-                    contains_required_options = False
-                    missing_options.append(configuration_option)
-
-            # emit credential change event only if all mandatory fields are present
-            # and there has been a change in credentials
-            if contains_required_options and diff:
-                getattr(self.on, "service_principal_info_changed").emit(
-                    event.relation, app=event.app, unit=event.unit
-                )
-            else:
-                logger.warning(
-                    f"Some mandatory fields: {missing_options} are not present, do not emit credential change event!"
-                )
-        super()._on_relation_changed_event(event)
+        # emit credential change event only if all mandatory fields are present
+        if contains_required_options:
+            getattr(self.on, "service_principal_info_changed").emit(
+                event.relation, app=event.app, unit=event.unit
+            )
+        else:
+            logger.warning(
+                f"Some mandatory fields: {missing_options} are not present, do not emit credential change event!"
+            )
 
 
 class AzureServicePrincipalProvider(ResourceProviderEventHandler):
+    """The provider side of Azure service principal relation."""
+
     def __init__(self, charm: CharmBase, relation_name: str):
         ResourceProviderEventHandler.__init__(self, charm, relation_name, RequirerCommonModel)
 

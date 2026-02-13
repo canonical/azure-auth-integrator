@@ -35,7 +35,7 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         self.framework.observe(self.charm.on.update_status, self._on_update_status)
         self.framework.observe(self.charm.on.config_changed, self._on_config_changed)
         self.framework.observe(self.charm.on.secret_changed, self._on_secret_changed)
-        
+
         self.framework.observe(
             self.azure_service_principal_provider.on.resource_requested,
             self._on_azure_service_principal_resource_requested,
@@ -86,7 +86,7 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
 
     def _on_azure_service_principal_resource_requested(self, event: ResourceRequestedEvent):
         """Handle the data_interfaces `resource requested` event."""
-        self.logger.info("Handling resource-requested event.")
+        self.logger.debug("Handling resource-requested event.")
         if not self.charm.unit.is_leader():
             return
 

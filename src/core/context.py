@@ -5,7 +5,6 @@
 
 from ops import ConfigData, Model
 
-from constants import AZURE_SERVICE_PRINCIPAL_MANDATORY_OPTIONS
 from core.domain import AzureServicePrincipalInfo
 from utils.logging import WithLogging
 from utils.secrets import decode_secret_key
