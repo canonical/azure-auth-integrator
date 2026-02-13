@@ -11,7 +11,6 @@ requires-poetry = ">=2.0.0"
 [tool.poetry.dependencies]
 python = "^3.12"
 ops = "^3.0.0"
-tenacity = ">=9.1.2"
 
 [tool.poetry.group.charm-libs.dependencies]
 cosl = ">=1.0.0"

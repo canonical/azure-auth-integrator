@@ -9,7 +9,10 @@ from pathlib import Path
 import jubilant
 import pytest
 import yaml
-from helpers import get_application_data
+from helpers import (
+    get_application_data,
+    get_credentials
+)
 
 logger = logging.getLogger(__name__)
 # This function it too verbose
@@ -119,7 +122,9 @@ def test_relation_creation(juju: jubilant.Juju):
 
     # Ensure data exists in the relation databag
     app_data = get_application_data(juju, APP_NAME, RELATION_NAME)["data"]
-    azure_credentials = next(iter(app_data.values()))
+    logger.info(app_data)
+    azure_credentials = get_credentials(app_data)
+    logger.info("**********AZURE CREDENTIALS**********")
     logger.info(azure_credentials)
 
     assert "subscription-id" in azure_credentials
@@ -151,7 +156,7 @@ def test_credentials_updated(juju: jubilant.Juju):
 
     # Ensure data exists in the relation databag
     app_data = get_application_data(juju, APP_NAME, RELATION_NAME)["data"]
-    azure_credentials = next(iter(app_data.values()))
+    azure_credentials = get_credentials(app_data)
     assert azure_credentials["subscription-id"] == SUBSCRIPTION_ID_NEW_VALUE
     assert azure_credentials["tenant-id"] == TENANT_ID_TEST_VALUE
 
@@ -169,7 +174,7 @@ def test_credentials_updated(juju: jubilant.Juju):
 
     # Ensure data exists in the relation databag
     app_data = get_application_data(juju, APP_NAME, RELATION_NAME)["data"]
-    azure_credentials = next(iter(app_data.values()))
+    azure_credentials = get_credentials(app_data)
 
     assert "subscription-id" in azure_credentials
     assert "tenant-id" in azure_credentials

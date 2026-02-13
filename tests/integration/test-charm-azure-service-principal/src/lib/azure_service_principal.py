@@ -7,12 +7,12 @@ from charms.data_platform_libs.v1.data_interfaces import (
     ResourceProviderEventHandler,
     ResourceProviderModel,
     ResourceRequirerEventHandler,
+    ResourceRequiresEvents,
     ResourceRequestedEvent,
     build_model,
 )
 from ops.charm import (
     CharmBase,
-    CharmEvents,
     RelationBrokenEvent,
     RelationChangedEvent,
     RelationEvent,
@@ -54,7 +54,7 @@ class ServicePrincipalInfoGoneEvent(ServicePrincipalEvent):
     pass
 
 
-class AzureServicePrincipalRequirerEvents(CharmEvents):
+class AzureServicePrincipalRequirerEvents(ResourceRequiresEvents):
     """Events for the AzureServicePrincipalRequirer side implementation."""
 
     service_principal_info_changed = EventSource(ServicePrincipalInfoChangedEvent)
