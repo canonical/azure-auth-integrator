@@ -96,6 +96,7 @@ class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
         ResourceRequirerEventHandler.__init__(
             self, charm, relation_name, requests, response_model=AzureServicePrincipalProviderModel
         )
+        self.component = self.charm.app
 
         self.framework.observe(
             self.charm.on[self.relation_name].relation_broken,

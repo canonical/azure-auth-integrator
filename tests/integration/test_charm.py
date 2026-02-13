@@ -12,6 +12,8 @@ import yaml
 from helpers import get_application_data
 
 logger = logging.getLogger(__name__)
+# This function it too verbose
+logging.getLogger("jubilant.wait").setLevel(logging.WARNING)
 
 
 CHARM_METADATA = yaml.safe_load(Path("./metadata.yaml").read_text())
@@ -90,6 +92,7 @@ def test_config_options(juju: jubilant.Juju):
 
     # Add a secret but don't provide all values for the secret, so status should stay blocked
     secret_uri = juju.add_secret(SECRET_IDENTIFIER, {"client-id": CLIENT_ID_TEST_VALUE})
+    juju.wait(jubilant.all_agents_idle, delay=5.0)
     juju.grant_secret(secret_uri, APP_NAME)
     juju.config(APP_NAME, {"credentials": secret_uri})
     juju.wait(jubilant.all_agents_idle, delay=10.0)
@@ -112,11 +115,11 @@ def test_config_options(juju: jubilant.Juju):
 def test_relation_creation(juju: jubilant.Juju):
     """Relate charm and wait for the expected changes in status."""
     juju.integrate(APP_NAME, TEST_APP_NAME)
-    juju.wait(jubilant.all_active)
+    juju.wait(jubilant.all_active, delay=5.0)
 
     # Ensure data exists in the relation databag
-    azure_credentials = get_application_data(juju, TEST_APP_NAME, RELATION_NAME)
-    logger.debug(azure_credentials)
+    azure_credentials = get_application_data(juju, APP_NAME, RELATION_NAME)["data"]
+    logger.info(azure_credentials)
 
     assert "subscription-id" in azure_credentials
     assert "tenant-id" in azure_credentials
@@ -146,7 +149,7 @@ def test_credentials_updated(juju: jubilant.Juju):
     juju.wait(jubilant.all_active)
 
     # Ensure data exists in the relation databag
-    azure_credentials = get_application_data(juju, TEST_APP_NAME, RELATION_NAME)
+    azure_credentials = get_application_data(juju, APP_NAME, RELATION_NAME)["data"]
     assert azure_credentials["subscription-id"] == SUBSCRIPTION_ID_NEW_VALUE
     assert azure_credentials["tenant-id"] == TENANT_ID_TEST_VALUE
 
@@ -163,7 +166,7 @@ def test_credentials_updated(juju: jubilant.Juju):
     juju.wait(jubilant.all_active)
 
     # Ensure data exists in the relation databag
-    azure_credentials = get_application_data(juju, TEST_APP_NAME, RELATION_NAME)
+    azure_credentials = get_application_data(juju, APP_NAME, RELATION_NAME)["data"]
     assert "subscription-id" in azure_credentials
     assert "tenant-id" in azure_credentials
     assert "secret-extra" in azure_credentials

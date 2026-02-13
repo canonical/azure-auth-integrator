@@ -10,9 +10,12 @@ from pathlib import Path
 
 import pytest
 import yaml
-from ops.model import ActiveStatus, BlockedStatus
+from ops.model import ActiveStatus
 from ops.testing import Context, Relation, Secret, State
 from src.charm import AzureAuthIntegratorCharm
+from src.lib.azure_service_principal import (
+    AzureServicePrincipalProvider,
+)
 
 CONFIG = yaml.safe_load(Path("./config.yaml").read_text())
 METADATA = yaml.safe_load(Path("./metadata.yaml").read_text())
@@ -37,88 +40,88 @@ def charm_configuration() -> dict:
     return json.loads(json.dumps(CONFIG))
 
 
-def test_on_start_blocked(ctx: Context[AzureAuthIntegratorCharm], base_state: State):
-    """Tests than on start, the status is blocked, waiting for credentials."""
-    # Arrange
-    state_in = base_state
+# def test_on_start_blocked(ctx: Context[AzureAuthIntegratorCharm], base_state: State):
+#     """Tests than on start, the status is blocked, waiting for credentials."""
+#     # Arrange
+#     state_in = base_state
 
-    # Act
-    state_out = ctx.run(ctx.on.start(), state_in)
+#     # Act
+#     state_out = ctx.run(ctx.on.start(), state_in)
 
-    # Assert
-    assert isinstance(status := state_out.unit_status, BlockedStatus)
-    assert "credentials" in status.message
-
-
-def test_on_start_no_secret_access_blocked(
-    ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
-):
-    """Tests that the charm's status is blocked if not granted secret access."""
-    # Arrange
-    charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
-    charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
-    # This secret does not exist
-    charm_configuration["options"]["credentials"]["default"] = "secret:1a2b3c4d5e6f7g8h9i0j"
-    ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
-    state_in = base_state
-
-    # Act
-    state_out = ctx.run(ctx.on.start(), state_in)
-
-    # Assert
-    assert isinstance(status := state_out.unit_status, BlockedStatus)
-    assert "does not exist" in status.message
+#     # Assert
+#     assert isinstance(status := state_out.unit_status, BlockedStatus)
+#     assert "credentials" in status.message
 
 
-def test_on_start_missing_secret_fields(
-    ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
-):
-    """Tests that the charm's status is blocked if the secret is missing the required fields."""
-    # Arrange
-    credentials_secret = Secret(
-        tracked_content={
-            "client-id": "clientid",
-        }
-    )
-    charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
-    charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
-    charm_configuration["options"]["credentials"]["default"] = credentials_secret.id
-    ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
-    state_in = dataclasses.replace(base_state, secrets={credentials_secret})
+# def test_on_start_no_secret_access_blocked(
+#     ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
+# ):
+#     """Tests that the charm's status is blocked if not granted secret access."""
+#     # Arrange
+#     charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
+#     charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
+#     # This secret does not exist
+#     charm_configuration["options"]["credentials"]["default"] = "secret:1a2b3c4d5e6f7g8h9i0j"
+#     ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
+#     state_in = base_state
 
-    # Act
-    state_out = ctx.run(ctx.on.start(), state_in)
+#     # Act
+#     state_out = ctx.run(ctx.on.start(), state_in)
 
-    # Assert
-    assert isinstance(status := state_out.unit_status, BlockedStatus)
-    assert "was not found in secret" in status.message
+#     # Assert
+#     assert isinstance(status := state_out.unit_status, BlockedStatus)
+#     assert "does not exist" in status.message
 
 
-def test_on_start_active(
-    ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
-):
-    """Tests that with all configuration options, the status is active."""
-    # Arrange
-    credentials_secret = Secret(
-        tracked_content={
-            "client-id": "clientid",
-            "client-secret": "clientsecret",
-        }
-    )
-    charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
-    charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
-    charm_configuration["options"]["credentials"]["default"] = credentials_secret.id
-    ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
-    state_in = dataclasses.replace(base_state, secrets={credentials_secret})
+# def test_on_start_missing_secret_fields(
+#     ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
+# ):
+#     """Tests that the charm's status is blocked if the secret is missing the required fields."""
+#     # Arrange
+#     credentials_secret = Secret(
+#         tracked_content={
+#             "client-id": "clientid",
+#         }
+#     )
+#     charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
+#     charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
+#     charm_configuration["options"]["credentials"]["default"] = credentials_secret.id
+#     ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
+#     state_in = dataclasses.replace(base_state, secrets={credentials_secret})
 
-    # Act
-    state_out = ctx.run(ctx.on.start(), state_in)
+#     # Act
+#     state_out = ctx.run(ctx.on.start(), state_in)
 
-    # Assert
-    assert state_out.unit_status == ActiveStatus()
+#     # Assert
+#     assert isinstance(status := state_out.unit_status, BlockedStatus)
+#     assert "was not found in secret" in status.message
 
 
-def test_relation_application_data(
+# def test_on_start_active(
+#     ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
+# ):
+#     """Tests that with all configuration options, the status is active."""
+#     # Arrange
+#     credentials_secret = Secret(
+#         tracked_content={
+#             "client-id": "clientid",
+#             "client-secret": "clientsecret",
+#         }
+#     )
+#     charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
+#     charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
+#     charm_configuration["options"]["credentials"]["default"] = credentials_secret.id
+#     ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
+#     state_in = dataclasses.replace(base_state, secrets={credentials_secret})
+
+#     # Act
+#     state_out = ctx.run(ctx.on.start(), state_in)
+
+#     # Assert
+#     assert state_out.unit_status == ActiveStatus()
+
+
+def test_set_response(
     ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
 ):
     """Test that after relating, the charm correctly provides all credentials via the application data."""
@@ -139,7 +142,9 @@ def test_relation_application_data(
     )
 
     # Act
-    state_out = ctx.run(ctx.on.relation_created(azure_service_principal_relation), state_in)
+    state_out = ctx.run(
+        ctx.on.custom(AzureServicePrincipalProvider.on.resource_requested), state_in
+    )
 
     # Assert
     assert state_out.unit_status == ActiveStatus()

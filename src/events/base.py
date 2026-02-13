@@ -14,7 +14,7 @@ from utils.secrets import decode_secret_key
 
 @retry(
     stop=stop_after_attempt(3),
-    wait=wait_fixed(5),
+    wait=wait_fixed(2),
     retry=retry_if_exception_type(ModelError),
     reraise=True,
 )
