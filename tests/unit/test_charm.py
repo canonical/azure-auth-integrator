@@ -10,12 +10,9 @@ from pathlib import Path
 
 import pytest
 import yaml
-from ops.model import ActiveStatus
-from ops.testing import Context, Relation, Secret, State
+from ops.model import ActiveStatus, BlockedStatus
+from ops.testing import Context, Secret, State
 from src.charm import AzureAuthIntegratorCharm
-from src.lib.azure_service_principal import (
-    AzureServicePrincipalProvider,
-)
 
 CONFIG = yaml.safe_load(Path("./config.yaml").read_text())
 METADATA = yaml.safe_load(Path("./metadata.yaml").read_text())
@@ -119,5 +116,3 @@ def test_on_start_active(
 
     # Assert
     assert state_out.unit_status == ActiveStatus()
-
-
