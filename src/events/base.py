@@ -11,11 +11,6 @@ from utils.logging import WithLogging
 from utils.secrets import decode_secret_key
 
 
-def decode_secret_key_with_retry(model: Model, secret_id: str):
-    """Try to decode the secret key, retry for 3 times before failing."""
-    return decode_secret_key(model, secret_id)
-
-
 class BaseEventHandler(Object, WithLogging):
     """Base class for all Event Handler classes."""
 
@@ -29,7 +24,7 @@ class BaseEventHandler(Object, WithLogging):
             self.logger.warning(f"Missing parameters: {missing_options}")
             return BlockedStatus(f"Missing parameters: {missing_options}")
         try:
-            decode_secret_key_with_retry(model, charm_config.get("credentials"))
+            decode_secret_key(model, charm_config.get("credentials"))
         except Exception as e:
             self.logger.warning(f"Error in decoding secret: {e}")
             return BlockedStatus(str(e))
