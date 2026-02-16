@@ -125,13 +125,10 @@ def test_relation_creation(juju: jubilant.Juju):
     # Ensure data exists in the relation databag
     app_data = get_application_data(juju, APP_NAME, RELATION_NAME)["data"]
     azure_credentials = get_credentials(app_data)
-    logger.debug("**********AZURE CREDENTIALS**********")
-    logger.debug(azure_credentials)
 
     assert "subscription-id" in azure_credentials
     assert "tenant-id" in azure_credentials
     assert "secret-extra" in azure_credentials
-
     assert azure_credentials["subscription-id"] == SUBSCRIPTION_ID_TEST_VALUE
     assert azure_credentials["tenant-id"] == TENANT_ID_TEST_VALUE
 
