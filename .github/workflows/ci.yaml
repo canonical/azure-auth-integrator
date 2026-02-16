@@ -70,12 +70,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - name: Setup operator environment
-        uses: charmed-kubernetes/actions-operator@main
-        with:
-          provider: microk8s
-          channel: 1.32-strict/stable
-          juju-channel: 3.6/stable
+      - name: Setup environment
+      run: |
+        sudo apt-get remove -y docker-ce docker-ce-cli containerd.io
+        sudo rm -rf /run/containerd
+        sudo snap install concierge --classic
+        sudo concierge prepare --trace
       - name: Download packed charm(s)
         uses: actions/download-artifact@v5
         with:
@@ -87,3 +87,16 @@ jobs:
           pipx install poetry
       - name: Run integration tests
         run: tox -e integration
+
+
+      - name: Get pod statuses
+        run: kubectl get all -A
+        if: failure()
+
+      - name: Get juju status
+        run: juju status
+        if: failure()
+
+      - name: Get katib-controller operator logs
+        run: kubectl logs --tail 100 -nkubeflow -loperator.juju.is/name=azure-auth-integrator
+        if: failure()
