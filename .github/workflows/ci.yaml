@@ -71,11 +71,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Setup environment
-      run: |
-        sudo apt-get remove -y docker-ce docker-ce-cli containerd.io
-        sudo rm -rf /run/containerd
-        sudo snap install concierge --classic
-        sudo concierge prepare --trace
+        run: |
+          sudo apt-get remove -y docker-ce docker-ce-cli containerd.io
+          sudo rm -rf /run/containerd
+          sudo snap install concierge --classic
+          sudo concierge prepare --trace
       - name: Download packed charm(s)
         uses: actions/download-artifact@v5
         with:
