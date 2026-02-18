@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 import yaml
 from ops.model import ActiveStatus, BlockedStatus
-from ops.testing import Context, Secret, State
+from ops.testing import Context, Relation, Secret, State
 from src.charm import AzureAuthIntegratorCharm
 
 CONFIG = yaml.safe_load(Path("./config.yaml").read_text())
@@ -116,3 +116,53 @@ def test_on_start_active(
 
     # Assert
     assert state_out.unit_status == ActiveStatus()
+
+
+def test_relation_application_data(
+    ctx: Context[AzureAuthIntegratorCharm], base_state: State, charm_configuration: dict
+):
+    """Test that after relating, the charm correctly provides all credentials via the application data."""
+    # Arrange
+    credentials_secret = Secret(
+        tracked_content={
+            "client-id": "clientid",
+            "client-secret": "clientsecret",
+        }
+    )
+    charm_configuration["options"]["subscription-id"]["default"] = "subscriptionid"
+    charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
+    charm_configuration["options"]["credentials"]["default"] = credentials_secret.id
+    remote_app_data = {
+        "requests": json.dumps(
+            [
+                {
+                    "resource": "azure-service-principal",
+                    "request-id": "ffffffffffffffff",
+                    "salt": "ssssssssssssssss",
+                    "subscription-id": "",
+                    "tenant-id": "",
+                }
+            ]
+        ),
+        "version": "v1",
+    }
+    ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
+    azure_service_principal_relation = Relation(
+        endpoint="azure-service-principal-credentials", remote_app_data=remote_app_data
+    )
+    state_in = dataclasses.replace(
+        base_state, relations=[azure_service_principal_relation], secrets={credentials_secret}
+    )
+
+    # Act
+    state_out = ctx.run(ctx.on.relation_changed(azure_service_principal_relation), state_in)
+
+    # Assert
+    assert state_out.unit_status == ActiveStatus()
+    provider_data = state_out.get_relation(azure_service_principal_relation.id).local_app_data
+    azure_credentials = json.loads(provider_data["requests"])[0]
+    assert azure_credentials["subscription-id"] == "subscriptionid"
+    assert azure_credentials["tenant-id"] == "tenantid"
+    secret = state_out.get_secret(id=azure_credentials["secret-extra"]).latest_content
+    assert secret["client-id"] == "clientid"
+    assert secret["client-secret"] == "clientsecret"
