@@ -90,7 +90,7 @@ class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
         relation_name: str,
     ):
         requests = [
-            AzureServicePrincipalRequirerModel(resource="azure-service-principal"),
+            RequirerCommonModel(resource="azure-service-principal"),
         ]
 
         ResourceRequirerEventHandler.__init__(
