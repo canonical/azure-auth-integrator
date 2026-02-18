@@ -41,18 +41,18 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
             self._on_azure_service_principal_resource_requested,
         )
 
-    def _on_update_status(self, event: ops.UpdateStatusEvent):
+    def _on_update_status(self, _event: ops.UpdateStatusEvent):
         """Handle the update status event."""
-        self._update_provider_data(event)
+        self._update_provider_data()
 
-    def _on_config_changed(self, event: ConfigChangedEvent) -> None:  # noqa: C901
+    def _on_config_changed(self, _event: ConfigChangedEvent) -> None:  # noqa: C901
         """Event handler for configuration changed events."""
         # Only execute in the leader unit
         if not self.charm.unit.is_leader():
             return
 
         self.logger.debug(f"Config changed... Current configuration: {self.charm.config}")
-        self._update_provider_data(event)
+        self._update_provider_data()
 
     def _on_secret_changed(self, event: ops.SecretChangedEvent):
         """Handle the secret changed event.
@@ -72,9 +72,9 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         if self.charm.config.get("credentials") != secret.id:
             return
 
-        self._update_provider_data(event)
+        self._update_provider_data()
 
-    def _update_provider_data(self, event):
+    def _update_provider_data(self):
         """Update the contents of the relation data bag."""
         self.logger.debug("Updating the provider data.")
         data = self.context.azure_service_principal.to_dict()
@@ -84,11 +84,10 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         relation = relations[0]
         self.azure_service_principal_provider.update_response(relation, data)
 
-    def _on_azure_service_principal_resource_requested(self, event: ResourceRequestedEvent):
+    def _on_azure_service_principal_resource_requested(self, _event: ResourceRequestedEvent):
         """Handle the data_interfaces `resource requested` event."""
         self.logger.debug("Handling resource-requested event.")
         if not self.charm.unit.is_leader():
             return
 
-        data = self.context.azure_service_principal.to_dict()
-        self.azure_service_principal_provider.set_initial_response(event, data)
+        self._update_provider_data()

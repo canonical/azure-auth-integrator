@@ -163,19 +163,6 @@ class AzureServicePrincipalProvider(ResourceProviderEventHandler):
     def __init__(self, charm: CharmBase, relation_name: str):
         ResourceProviderEventHandler.__init__(self, charm, relation_name, RequirerCommonModel)
 
-    def set_initial_response(self, event: ResourceRequestedEvent, data):
-        """Set the initial response when a new resource is requested."""
-        response = AzureServicePrincipalProviderModel(
-            salt=event.request.salt,
-            request_id=event.request.request_id,
-            resource="azure-service-principal",
-            subscription_id=data["subscription-id"],
-            tenant_id=data["tenant-id"],
-            client_id=data["client-id"],
-            client_secret=data["client-secret"],
-        )
-        self.set_response(event.relation.id, response)
-
     def update_response(self, relation: Relation, data):
         """Update the response to the requirer."""
         requests = self.requests(relation)
