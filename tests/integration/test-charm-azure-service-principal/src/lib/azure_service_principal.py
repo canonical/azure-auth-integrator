@@ -6,6 +6,7 @@ from charms.data_platform_libs.v1.data_interfaces import (
     RequirerCommonModel,
     ResourceProviderEventHandler,
     ResourceProviderModel,
+    ResourceRequestedEvent,
     ResourceRequirerEventHandler,
     ResourceRequiresEvents,
     build_model,
@@ -170,13 +171,13 @@ class AzureServicePrincipalProvider(ResourceProviderEventHandler):
         logger.info("Azure service principal relation created...")
 
         requests = self.requests(event.relation)
-        if not requests:
-            logger.info("Resource requested has not been emitted.")
-            request = RequirerCommonModel(
-                resource="azure-service-principal",
-            )
+        logger.warning(requests)
+        if requests and requests[0].version == "v0":
+            # For compatibility with older versions of the library
+            # that don't use data_interfaces.py `v1`
+            logger.info("resource-requested event has not been emitted. Emitting manually...")
             getattr(self.on, "resource_requested").emit(
-                event.relation, app=event.app, unit=event.unit, request=request
+                event.relation, app=event.app, unit=event.unit, request=requests[0]
             )
 
     def update_response(self, relation: Relation, data):
