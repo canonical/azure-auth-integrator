@@ -37,7 +37,10 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         self.framework.observe(self.charm.on.config_changed, self._on_config_changed)
         self.framework.observe(self.charm.on.secret_changed, self._on_secret_changed)
 
-        self.framework.observe(self.charm.on[AZURE_SERVICE_PRINCIPAL_RELATION_NAME].relation_joined, self._on_relation_joined)
+        self.framework.observe(
+            self.charm.on[AZURE_SERVICE_PRINCIPAL_RELATION_NAME].relation_joined,
+            self._on_relation_joined,
+        )
 
         self.framework.observe(
             self.azure_service_principal_provider.on.resource_requested,
@@ -95,7 +98,7 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
             return
 
         self._update_provider_data()
-        
+
     def _on_azure_service_principal_resource_requested(self, _event: ResourceRequestedEvent):
         """Handle the data_interfaces `resource requested` event."""
         self.logger.debug("Handling resource-requested event.")
