@@ -38,11 +38,6 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         self.framework.observe(self.charm.on.secret_changed, self._on_secret_changed)
 
         self.framework.observe(
-            self.charm.on[AZURE_SERVICE_PRINCIPAL_RELATION_NAME].relation_joined,
-            self._on_relation_joined,
-        )
-
-        self.framework.observe(
             self.azure_service_principal_provider.on.resource_requested,
             self._on_azure_service_principal_resource_requested,
         )
@@ -89,15 +84,6 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
             return
         relation = relations[0]
         self.azure_service_principal_provider.update_response(relation, data)
-
-    # We keep this for compatibility with the previous version of the azure_service_principal_library
-    def _on_relation_joined(self, _event: RelationJoinedEvent):
-        """Handle the relation joined event."""
-        self.logger.debug("Handling relation-joined event.")
-        if not self.charm.unit.is_leader():
-            return
-
-        self._update_provider_data()
 
     def _on_azure_service_principal_resource_requested(self, _event: ResourceRequestedEvent):
         """Handle the data_interfaces `resource requested` event."""

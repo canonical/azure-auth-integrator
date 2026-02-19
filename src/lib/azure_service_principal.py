@@ -6,15 +6,16 @@ from charms.data_platform_libs.v1.data_interfaces import (
     RequirerCommonModel,
     ResourceProviderEventHandler,
     ResourceProviderModel,
+    ResourceRequestedEvent,
     ResourceRequirerEventHandler,
     ResourceRequiresEvents,
-    ResourceRequestedEvent,
     build_model,
 )
 from ops.charm import (
     CharmBase,
     RelationBrokenEvent,
     RelationChangedEvent,
+    RelationJoinedEvent,
     RelationEvent,
 )
 from ops.framework import EventSource
@@ -159,6 +160,25 @@ class AzureServicePrincipalProvider(ResourceProviderEventHandler):
 
     def __init__(self, charm: CharmBase, relation_name: str):
         ResourceProviderEventHandler.__init__(self, charm, relation_name, RequirerCommonModel)
+
+        self.framework.observe(
+            self.charm.on[self.relation_name].relation_joined,
+            self._on_relation_joined_event,
+        )
+
+    def _on_relation_joined_event(self, event: RelationJoinedEvent) -> None:
+        """Event handler for handling the relation_created event."""
+        logger.info("Azure service principal relation created...")
+
+        requests = self.requests(event.relation)
+        logger.warning(requests)
+        if requests and requests[0].version == "v0":
+            # For compatibility with older versions of the library
+            # that don't use data_interfaces.py `v1`
+            logger.info("resource-requested event has not been emitted. Emitting manually...")
+            getattr(self.on, "resource_requested").emit(
+                event.relation, app=event.app, unit=event.unit, request=requests[0]
+            )
 
     def update_response(self, relation: Relation, data):
         """Update the response to the requirer."""
