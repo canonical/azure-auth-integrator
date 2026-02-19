@@ -7,7 +7,6 @@ import ops
 from ops import CharmBase
 from ops.charm import (
     ConfigChangedEvent,
-    RelationJoinedEvent,
 )
 
 from constants import AZURE_SERVICE_PRINCIPAL_RELATION_NAME
