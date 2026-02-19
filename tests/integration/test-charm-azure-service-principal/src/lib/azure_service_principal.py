@@ -167,6 +167,7 @@ class AzureServicePrincipalProvider(ResourceProviderEventHandler):
         """Update the response to the requirer."""
         requests = self.requests(relation)
         for request in requests:
+            logger.debug(request)
             new_response = AzureServicePrincipalProviderModel(
                 salt=request.salt,
                 request_id=request.request_id,
