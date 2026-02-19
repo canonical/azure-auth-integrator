@@ -171,7 +171,6 @@ class AzureServicePrincipalProvider(ResourceProviderEventHandler):
         logger.info("Azure service principal relation created...")
 
         requests = self.requests(event.relation)
-        logger.warning(requests)
         if requests and requests[0].version == "v0":
             # For compatibility with older versions of the library
             # that don't use data_interfaces.py `v1`
