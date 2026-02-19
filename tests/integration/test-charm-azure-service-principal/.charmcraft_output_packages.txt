@@ -1,0 +1,1 @@
+test-charm-azure-service-principal_ubuntu@24.04-amd64.charm

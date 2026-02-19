@@ -35,6 +35,10 @@ AZURE_SERVICE_PRINCIPAL_REQUIRED_INFO = [
     "client-secret",
 ]
 
+# Fields that are populated in the relation databag by default in data_interfaces.py
+# but are not relevant for the requirer
+DATABAG_IRRELEVANT_FIELDS = ["request-id", "resource", "salt", "secret-extra"]
+
 
 class ServicePrincipalEvent(RelationEvent):
     """Base class for Azure service principal events."""
@@ -59,15 +63,6 @@ class AzureServicePrincipalRequirerEvents(ResourceRequiresEvents):
 
     service_principal_info_changed = EventSource(ServicePrincipalInfoChangedEvent)
     service_principal_info_gone = EventSource(ServicePrincipalInfoGoneEvent)
-
-
-class AzureServicePrincipalRequirerModel(RequirerCommonModel):
-    """Data abstraction of the requirer side of Azure service principal relation."""
-
-    subscription_id: str = Field(default="")
-    tenant_id: str = Field(default="")
-    client_id: ExtraSecretStr
-    client_secret: ExtraSecretStr
 
 
 class AzureServicePrincipalProviderModel(ResourceProviderModel):
@@ -121,8 +116,10 @@ class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
         request = requests[0]
 
         return {
-            key: getattr(request, key.replace("-", "_"), None)
-            for key in AZURE_SERVICE_PRINCIPAL_REQUIRED_INFO
+            key.replace("_", "-"): getattr(request, key)
+            for key in vars(request)
+            if (value := getattr(request, key)) is not None
+            and key.replace("_", "-") not in DATABAG_IRRELEVANT_FIELDS
         }
 
     def _on_relation_broken_event(self, event: RelationBrokenEvent) -> None:
