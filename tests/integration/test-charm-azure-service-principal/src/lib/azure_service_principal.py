@@ -171,14 +171,15 @@ class AzureServicePrincipalProvider(ResourceProviderEventHandler):
         logger.info("Azure service principal relation created...")
 
         requests = self.requests(event.relation)
-        logger.warning(requests)
-        if requests and requests[0].version == "v0":
-            # For compatibility with older versions of the library
-            # that don't use data_interfaces.py `v1`
-            logger.info("resource-requested event has not been emitted. Emitting manually...")
-            getattr(self.on, "resource_requested").emit(
-                event.relation, app=event.app, unit=event.unit, request=requests[0]
-            )
+        if requests:
+            request = requests[0]
+            if getattr(request, "version", None) == "v0":
+                # For compatibility with older versions of the library
+                # that don't use data_interfaces.py `v1`
+                logger.info("resource-requested event has not been emitted. Emitting manually...")
+                getattr(self.on, "resource_requested").emit(
+                    event.relation, app=event.app, unit=event.unit, request=requests[0]
+                )
 
     def update_response(self, relation: Relation, data):
         """Update the response to the requirer."""
