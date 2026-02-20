@@ -133,7 +133,10 @@ def test_relation_application_data(
     charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
     charm_configuration["options"]["credentials"]["default"] = credentials_secret.id
     ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
-    azure_service_principal_relation = Relation(endpoint="azure-service-principal-credentials")
+    azure_service_principal_relation = Relation(
+        endpoint="azure-service-principal-credentials",
+        remote_app_data={"requested-secrets": '["foo"]'},
+    )
     state_in = dataclasses.replace(
         base_state, relations=[azure_service_principal_relation], secrets={credentials_secret}
     )

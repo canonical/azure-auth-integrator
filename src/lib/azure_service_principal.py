@@ -181,12 +181,12 @@ class AzureServicePrincipalRequirer(
 class AzureServicePrincipalProviderData(ProviderData):
     """The Data abstraction of the provider side of Azure service principal relation."""
 
+    # Set RESOURCE_FIELD = "requested-secrets" so that premature data access error is not
+    # raised as "requested-secrets" is always there in the databag.
+    RESOURCE_FIELD = "requested-secrets"
+
     def __init__(self, model: Model, relation_name: str) -> None:
         super().__init__(model, relation_name)
-
-    # Override the method to bypass the parent's validation that raises PrematureDataAccessError.
-    def _update_relation_data(self, relation: Relation, data: Dict[str, str]) -> None:
-        super(ProviderData, self)._update_relation_data(relation, data)
 
 
 class AzureServicePrincipalProviderEventHandlers(EventHandlers):
