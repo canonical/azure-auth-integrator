@@ -79,10 +79,8 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         self.logger.debug("Updating the provider data.")
         data = self.context.azure_service_principal.to_dict()
         relations = self.model.relations[AZURE_SERVICE_PRINCIPAL_RELATION_NAME]
-        if not relations:
-            return
-        relation = relations[0]
-        self.azure_service_principal_provider.update_response(relation, data)
+        for relation in relations:
+            self.azure_service_principal_provider.update_response(relation, data)
 
     def _on_azure_service_principal_resource_requested(self, _event: ResourceRequestedEvent):
         """Handle the data_interfaces `resource requested` event."""
