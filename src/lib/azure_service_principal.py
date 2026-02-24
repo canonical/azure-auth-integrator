@@ -132,7 +132,6 @@ class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
 
     def _on_relation_changed_event(self, event: RelationChangedEvent) -> None:
         """Notify the charm about the presence of Azure service principal credentials."""
-        super()._on_relation_changed_event(event)
         logger.info(f"Azure service principal relation ({event.relation.name}) changed...")
 
         # check if the mandatory options are in the relation data
@@ -153,6 +152,7 @@ class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
             logger.warning(
                 f"Some mandatory fields: {missing_options} are not present, do not emit credential change event!"
             )
+        super()._on_relation_changed_event(event)
 
 
 class AzureServicePrincipalProvider(ResourceProviderEventHandler):
