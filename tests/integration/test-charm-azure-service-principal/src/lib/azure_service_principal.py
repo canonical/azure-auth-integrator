@@ -1,22 +1,19 @@
 import logging
 
 from charms.data_platform_libs.v1.data_interfaces import (
-    DataContractV1,
+    BaseCommonModel,
+    EventHandlers,
     ExtraSecretStr,
-    RequirerCommonModel,
-    ResourceProviderEventHandler,
-    ResourceProviderModel,
-    ResourceRequestedEvent,
-    ResourceRequirerEventHandler,
-    ResourceRequiresEvents,
-    build_model,
+    OpsRelationRepositoryInterface,
 )
 from ops.charm import (
     CharmBase,
+    CharmEvents,
     RelationBrokenEvent,
     RelationChangedEvent,
     RelationJoinedEvent,
     RelationEvent,
+    SecretChangedEvent,
 )
 from ops.framework import EventSource
 from ops.model import Relation
@@ -47,6 +44,12 @@ class ServicePrincipalEvent(RelationEvent):
     pass
 
 
+class ServicePrincipalInfoRequestedEvent(ServicePrincipalEvent):
+    """Event for requesting data from the interface."""
+
+    pass
+
+
 class ServicePrincipalInfoChangedEvent(ServicePrincipalEvent):
     """Event for changing data from the interface."""
 
@@ -59,14 +62,20 @@ class ServicePrincipalInfoGoneEvent(ServicePrincipalEvent):
     pass
 
 
-class AzureServicePrincipalRequirerEvents(ResourceRequiresEvents):
+class AzureServicePrincipalRequirerEvents(CharmEvents):
     """Events for the AzureServicePrincipalRequirer side implementation."""
 
     service_principal_info_changed = EventSource(ServicePrincipalInfoChangedEvent)
     service_principal_info_gone = EventSource(ServicePrincipalInfoGoneEvent)
 
 
-class AzureServicePrincipalProviderModel(ResourceProviderModel):
+class AzureServicePrincipalProviderEvents(CharmEvents):
+    """Events for the AzureServicePrincipalProvider side implementation."""
+
+    service_principal_info_requested = EventSource(ServicePrincipalInfoRequestedEvent)
+
+
+class AzureServicePrincipalProviderModel(BaseCommonModel):
     """Data abstraction of the provider side of Azure service principal relation."""
 
     subscription_id: str = Field(default="")
@@ -75,32 +84,27 @@ class AzureServicePrincipalProviderModel(ResourceProviderModel):
     client_secret: ExtraSecretStr
 
 
-class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
+class AzureServicePrincipalRequirer(EventHandlers):
     """The requirer side of Azure service principal relation."""
 
     on = AzureServicePrincipalRequirerEvents()  # pyright: ignore[reportAssignmentType]
 
-    def __init__(
-        self,
-        charm: CharmBase,
-        relation_name: str,
-    ):
-        requests = [
-            RequirerCommonModel(resource="azure-service-principal"),
-        ]
+    def __init__(self, charm: CharmBase, relation_name: str, unique_key: str = ""):
+        super().__init__(charm, relation_name, unique_key)
 
-        ResourceRequirerEventHandler.__init__(
-            self, charm, relation_name, requests, response_model=AzureServicePrincipalProviderModel
+        self.relation_name = relation_name
+        self.response_model = AzureServicePrincipalProviderModel
+        self.interface = OpsRelationRepositoryInterface(
+            charm.model, relation_name, self.response_model
         )
-        self.component = self.charm.app
+
+        self.framework.observe(
+            self.charm.on[self.relation_name].relation_changed, self._on_relation_changed_event
+        )
 
         self.framework.observe(
             self.charm.on[self.relation_name].relation_broken,
             self._on_relation_broken_event,
-        )
-        self.framework.observe(
-            self.charm.on[self.relation_name].relation_changed,
-            self._on_relation_changed_event,
         )
 
     def get_azure_service_principal_info(self):
@@ -108,18 +112,14 @@ class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
         if not self.relations:
             return {}
 
-        requests = build_model(
-            self.interface.repository(self.relations[0].id, self.relations[0].app),
-            DataContractV1[AzureServicePrincipalProviderModel],
-        ).requests
-        if not requests:
+        model = self.interface.build_model(self.relations[0].id, component=self.relations[0].app)
+        if not model:
             return {}
-        request = requests[0]
 
         return {
-            key.replace("_", "-"): getattr(request, key)
-            for key in vars(request)
-            if (value := getattr(request, key)) is not None
+            key.replace("_", "-"): getattr(model, key)
+            for key in vars(model)
+            if (value := getattr(model, key)) is not None
             and key.replace("_", "-") not in DATABAG_IRRELEVANT_FIELDS
         }
 
@@ -132,7 +132,6 @@ class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
 
     def _on_relation_changed_event(self, event: RelationChangedEvent) -> None:
         """Notify the charm about the presence of Azure service principal credentials."""
-        super()._on_relation_changed_event(event)
         logger.info(f"Azure service principal relation ({event.relation.name}) changed...")
 
         # check if the mandatory options are in the relation data
@@ -155,44 +154,55 @@ class AzureServicePrincipalRequirer(ResourceRequirerEventHandler):
             )
 
 
-class AzureServicePrincipalProvider(ResourceProviderEventHandler):
+class AzureServicePrincipalProvider(EventHandlers):
     """The provider side of Azure service principal relation."""
 
-    def __init__(self, charm: CharmBase, relation_name: str):
-        ResourceProviderEventHandler.__init__(self, charm, relation_name, RequirerCommonModel)
+    on = AzureServicePrincipalProviderEvents()  # pyright: ignore[reportAssignmentType]
+
+    def __init__(self, charm: CharmBase, relation_name: str, unique_key: str = ""):
+        super().__init__(charm, relation_name, unique_key)
+
+        self.response_model = AzureServicePrincipalProviderModel
+        self.interface = OpsRelationRepositoryInterface(
+            charm.model, relation_name, self.response_model
+        )
 
         self.framework.observe(
             self.charm.on[self.relation_name].relation_joined,
             self._on_relation_joined_event,
         )
 
+        self.framework.observe(
+            self.charm.on[self.relation_name].relation_changed, self._on_relation_changed_event
+        )
+
+        self.framework.observe(self.charm.on.secret_changed, self._on_secret_changed_event)
+
     def _on_relation_joined_event(self, event: RelationJoinedEvent) -> None:
-        """Event handler for handling the relation_created event."""
-        logger.info("Azure service principal relation created...")
+        """Event handler for handling the relation_joined event."""
+        logger.info("Azure service principal relation joined...")
 
-        requests = self.requests(event.relation)
-        if requests:
-            request = requests[0]
-            if getattr(request, "version", None) == "v0":
-                # For compatibility with older versions of the library
-                # that don't use data_interfaces.py `v1`
-                logger.info("resource-requested event has not been emitted. Emitting manually...")
-                getattr(self.on, "resource_requested").emit(
-                    event.relation, app=event.app, unit=event.unit, request=requests[0]
-                )
+        if not self.charm.unit.is_leader():
+            return
 
-    def update_response(self, relation: Relation, data):
+        self.on.service_principal_info_requested.emit(
+            event.relation, app=event.app, unit=event.unit
+        )
+
+    def _on_relation_changed_event(self, _event: RelationChangedEvent):
+        """Event handler for handling the relation_changed event."""
+        pass
+
+    def _on_secret_changed_event(self, _event: SecretChangedEvent):
+        """Event handler for handling a new value of a secret."""
+        pass
+
+    def update_response(self, relation: Relation, response_data):
         """Update the response to the requirer."""
-        requests = self.requests(relation)
-        for request in requests:
-            logger.debug(request)
-            new_response = AzureServicePrincipalProviderModel(
-                salt=request.salt,
-                request_id=request.request_id,
-                resource="azure-service-principal",
-                subscription_id=data["subscription-id"],
-                tenant_id=data["tenant-id"],
-                client_id=data["client-id"],
-                client_secret=data["client-secret"],
-            )
-            self.set_response(relation.id, new_response)
+        model = self.interface.build_model(relation.id)
+        model.subscription_id = str(response_data["subscription-id"])
+        model.tenant_id = str(response_data["tenant-id"])
+        for field in ("client-id", "client-secret"):
+            attr_name = field.replace("-", "_")
+            setattr(model, attr_name, response_data[field])
+        self.interface.write_model(relation.id, model)

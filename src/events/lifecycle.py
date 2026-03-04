@@ -14,7 +14,7 @@ from core.context import Context
 from events.base import BaseEventHandler
 from lib.azure_service_principal import (
     AzureServicePrincipalProvider,
-    ResourceRequestedEvent,
+    ServicePrincipalInfoRequestedEvent,
 )
 from utils.logging import WithLogging
 
@@ -37,8 +37,8 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         self.framework.observe(self.charm.on.secret_changed, self._on_secret_changed)
 
         self.framework.observe(
-            self.azure_service_principal_provider.on.resource_requested,
-            self._on_azure_service_principal_resource_requested,
+            self.azure_service_principal_provider.on.service_principal_info_requested,
+            self._on_azure_service_principal_info_requested,
         )
 
     def _on_update_status(self, _event: ops.UpdateStatusEvent):
@@ -82,7 +82,9 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         for relation in relations:
             self.azure_service_principal_provider.update_response(relation, data)
 
-    def _on_azure_service_principal_resource_requested(self, _event: ResourceRequestedEvent):
+    def _on_azure_service_principal_info_requested(
+        self, _event: ServicePrincipalInfoRequestedEvent
+    ):
         """Handle the data_interfaces `resource requested` event."""
         self.logger.debug("Handling resource-requested event.")
         if not self.charm.unit.is_leader():
