@@ -92,7 +92,6 @@ class AzureServicePrincipalRequirer(EventHandlers):
     def __init__(self, charm: CharmBase, relation_name: str, unique_key: str = ""):
         super().__init__(charm, relation_name, unique_key)
 
-        self.relation_name = relation_name
         self.response_model = AzureServicePrincipalProviderModel
         self.interface = OpsRelationRepositoryInterface(
             charm.model, relation_name, self.response_model
