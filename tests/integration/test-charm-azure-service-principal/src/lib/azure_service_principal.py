@@ -134,6 +134,12 @@ class AzureServicePrincipalRequirer(EventHandlers):
         """Notify the charm about the presence of Azure service principal credentials."""
         logger.info(f"Azure service principal relation ({event.relation.name}) changed...")
 
+        # Copy response to the local application databag
+        model = self.interface.build_model(
+            event.relation.id, component=self.relations[event.relation.id].app
+        )
+        self.interface.write_model(event.relation.id, model)
+
         # check if the mandatory options are in the relation data
         contains_required_options = True
         credentials = self.get_azure_service_principal_info()
