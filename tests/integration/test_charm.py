@@ -9,7 +9,7 @@ from pathlib import Path
 import jubilant
 import pytest
 import yaml
-from helpers import get_application_data, get_credentials
+from helpers import get_application_data
 
 logger = logging.getLogger(__name__)
 # This function it too verbose
@@ -123,16 +123,15 @@ def test_relation_creation(juju: jubilant.Juju):
     juju.wait(jubilant.all_active, delay=5.0)
 
     # Ensure data exists in the relation databag
-    app_data = get_application_data(juju, APP_NAME, RELATION_NAME)["data"]
-    azure_credentials = get_credentials(app_data)
+    app_data = get_application_data(juju, APP_NAME, RELATION_NAME)
 
-    assert "subscription-id" in azure_credentials
-    assert "tenant-id" in azure_credentials
-    assert "secret-extra" in azure_credentials
-    assert azure_credentials["subscription-id"] == SUBSCRIPTION_ID_TEST_VALUE
-    assert azure_credentials["tenant-id"] == TENANT_ID_TEST_VALUE
+    assert "subscription-id" in app_data
+    assert "tenant-id" in app_data
+    assert "secret-extra" in app_data
+    assert app_data["subscription-id"] == SUBSCRIPTION_ID_TEST_VALUE
+    assert app_data["tenant-id"] == TENANT_ID_TEST_VALUE
 
-    secret_uri = azure_credentials["secret-extra"]
+    secret_uri = app_data["secret-extra"]
     secret_data = juju.show_secret(secret_uri, reveal=True)
     assert secret_data.content["client-id"] == CLIENT_ID_TEST_VALUE
     assert secret_data.content["client-secret"] == CLIENT_SECRET_TEST_VALUE
@@ -154,10 +153,9 @@ def test_credentials_updated(juju: jubilant.Juju):
     juju.wait(jubilant.all_active)
 
     # Ensure data exists in the relation databag
-    app_data = get_application_data(juju, APP_NAME, RELATION_NAME)["data"]
-    azure_credentials = get_credentials(app_data)
-    assert azure_credentials["subscription-id"] == SUBSCRIPTION_ID_NEW_VALUE
-    assert azure_credentials["tenant-id"] == TENANT_ID_TEST_VALUE
+    app_data = get_application_data(juju, APP_NAME, RELATION_NAME)
+    assert app_data["subscription-id"] == SUBSCRIPTION_ID_NEW_VALUE
+    assert app_data["tenant-id"] == TENANT_ID_TEST_VALUE
 
     # Ensure data exists in the requirer side
     result = juju.run(TEST_APP_UNIT_NAME, "get-azure-service-principal-info")
@@ -174,12 +172,11 @@ def test_credentials_updated(juju: jubilant.Juju):
 
     # Ensure data exists in the relation databag
     app_data = get_application_data(juju, APP_NAME, RELATION_NAME)["data"]
-    azure_credentials = get_credentials(app_data)
 
-    assert "subscription-id" in azure_credentials
-    assert "tenant-id" in azure_credentials
-    assert "secret-extra" in azure_credentials
-    secret_uri = azure_credentials["secret-extra"]
+    assert "subscription-id" in app_data
+    assert "tenant-id" in app_data
+    assert "secret-extra" in app_data
+    secret_uri = app_data["secret-extra"]
     secret_data = juju.show_secret(secret_uri, reveal=True)
     assert secret_data.content["client-id"] == CLIENT_ID_TEST_VALUE
     assert secret_data.content["client-secret"] == CLIENT_SECRET_NEW_VALUE

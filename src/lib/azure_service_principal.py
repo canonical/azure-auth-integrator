@@ -110,6 +110,8 @@ class AzureServicePrincipalRequirer(EventHandlers):
             self._on_relation_broken_event,
         )
 
+        self.framework.observe(self.charm.on.secret_changed, self._on_secret_changed_event)
+
     def get_azure_service_principal_info(self):
         """Return the Azure service principal info as a dictionary."""
         if not self.relations:
@@ -161,6 +163,10 @@ class AzureServicePrincipalRequirer(EventHandlers):
             logger.warning(
                 f"Some mandatory fields: {missing_options} are not present, do not emit credential change event!"
             )
+
+    def _on_secret_changed_event(self, _event: SecretChangedEvent):
+        """Event handler for handling a new value of a secret."""
+        pass
 
 
 class AzureServicePrincipalProvider(EventHandlers):
