@@ -34,10 +34,6 @@ AZURE_SERVICE_PRINCIPAL_REQUIRED_INFO = [
     "client-secret",
 ]
 
-# Fields that are populated in the relation databag by default in data_interfaces.py
-# but are not relevant for the requirer
-DATABAG_IRRELEVANT_FIELDS = ["request-id", "resource", "salt", "secret-extra"]
-
 
 class ServicePrincipalEvent(RelationEvent):
     """Base class for Azure service principal events."""

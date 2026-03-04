@@ -121,6 +121,7 @@ class AzureServicePrincipalRequirer(EventHandlers):
             key.replace("_", "-"): getattr(model, key)
             for key in vars(model)
             if (value := getattr(model, key)) is not None
+            and key.replace("_", "-") not in DATABAG_IRRELEVANT_FIELDS
         }
 
     def _on_relation_broken_event(self, event: RelationBrokenEvent) -> None:
