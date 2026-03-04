@@ -1,4 +1,5 @@
 import logging
+from typing import Dict
 
 from charms.data_platform_libs.v1.data_interfaces import (
     BaseCommonModel,
@@ -108,7 +109,7 @@ class AzureServicePrincipalRequirer(EventHandlers):
 
         self.framework.observe(self.charm.on.secret_changed, self._on_secret_changed_event)
 
-    def get_azure_service_principal_info(self):
+    def get_azure_service_principal_info(self) -> Dict[str, str]:
         """Return the Azure service principal info as a dictionary."""
         if not self.relations:
             return {}
@@ -121,7 +122,6 @@ class AzureServicePrincipalRequirer(EventHandlers):
             key.replace("_", "-"): getattr(model, key)
             for key in vars(model)
             if (value := getattr(model, key)) is not None
-            and key.replace("_", "-") not in DATABAG_IRRELEVANT_FIELDS
         }
 
     def _on_relation_broken_event(self, event: RelationBrokenEvent) -> None:
@@ -160,7 +160,7 @@ class AzureServicePrincipalRequirer(EventHandlers):
                 f"Some mandatory fields: {missing_options} are not present, do not emit credential change event!"
             )
 
-    def _on_secret_changed_event(self, _event: SecretChangedEvent):
+    def _on_secret_changed_event(self, _event: SecretChangedEvent) -> None:
         """Event handler for handling a new value of a secret."""
         pass
 
@@ -200,15 +200,15 @@ class AzureServicePrincipalProvider(EventHandlers):
             event.relation, app=event.app, unit=event.unit
         )
 
-    def _on_relation_changed_event(self, _event: RelationChangedEvent):
+    def _on_relation_changed_event(self, _event: RelationChangedEvent) -> None:
         """Event handler for handling the relation_changed event."""
         pass
 
-    def _on_secret_changed_event(self, _event: SecretChangedEvent):
+    def _on_secret_changed_event(self, _event: SecretChangedEvent) -> None:
         """Event handler for handling a new value of a secret."""
         pass
 
-    def update_response(self, relation: Relation, response_data):
+    def update_response(self, relation: Relation, response_data) -> None:
         """Update the response to the requirer."""
         model = self.interface.build_model(relation.id)
         model.subscription_id = response_data["subscription-id"]
