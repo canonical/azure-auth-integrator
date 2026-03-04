@@ -171,7 +171,7 @@ def test_credentials_updated(juju: jubilant.Juju):
     juju.wait(jubilant.all_active)
 
     # Ensure data exists in the relation databag
-    app_data = get_application_data(juju, APP_NAME, RELATION_NAME)["data"]
+    app_data = get_application_data(juju, APP_NAME, RELATION_NAME)
 
     assert "subscription-id" in app_data
     assert "tenant-id" in app_data
