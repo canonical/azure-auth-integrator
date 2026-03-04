@@ -5,6 +5,7 @@ from charms.data_platform_libs.v1.data_interfaces import (
     EventHandlers,
     ExtraSecretStr,
     OpsRelationRepositoryInterface,
+    SecretString,
 )
 from ops.charm import (
     CharmBase,
@@ -82,6 +83,8 @@ class AzureServicePrincipalProviderModel(BaseCommonModel):
     tenant_id: str = Field(default="")
     client_id: ExtraSecretStr
     client_secret: ExtraSecretStr
+
+    secret_extra: SecretString | None = Field(default=None)
 
 
 class AzureServicePrincipalRequirer(EventHandlers):
@@ -206,8 +209,8 @@ class AzureServicePrincipalProvider(EventHandlers):
     def update_response(self, relation: Relation, response_data):
         """Update the response to the requirer."""
         model = self.interface.build_model(relation.id)
-        model.subscription_id = str(response_data["subscription-id"])
-        model.tenant_id = str(response_data["tenant-id"])
+        model.subscription_id = response_data["subscription-id"]
+        model.tenant_id = response_data["tenant-id"]
         for field in ("client-id", "client-secret"):
             attr_name = field.replace("-", "_")
             setattr(model, attr_name, response_data[field])
