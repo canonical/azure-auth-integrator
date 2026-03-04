@@ -148,6 +148,6 @@ def test_relation_application_data(
     provider_data = state_out.get_relation(azure_service_principal_relation.id).local_app_data
     assert provider_data["subscription-id"] == "subscriptionid"
     assert provider_data["tenant-id"] == "tenantid"
-    secret = state_out.get_secret(id=provider_data["secret_extra"]).latest_content
+    secret = state_out.get_secret(id=provider_data["secret-extra"]).latest_content
     assert secret["client-id"] == "clientid"
     assert secret["client-secret"] == "clientsecret"
