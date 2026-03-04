@@ -85,8 +85,8 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
     def _on_azure_service_principal_info_requested(
         self, _event: ServicePrincipalInfoRequestedEvent
     ):
-        """Handle the data_interfaces `resource requested` event."""
-        self.logger.debug("Handling resource-requested event.")
+        """Handle the azure_service_principal `info_requested` event."""
+        self.logger.debug("Handling info-requested event.")
         if not self.charm.unit.is_leader():
             return
 
