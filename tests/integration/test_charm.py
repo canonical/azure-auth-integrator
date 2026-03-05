@@ -12,7 +12,7 @@ import yaml
 from helpers import get_application_data
 
 logger = logging.getLogger(__name__)
-# This function it too verbose
+# juju.wait logs are too verbose, suppress all logs lesser than WARNING level
 logging.getLogger("jubilant.wait").setLevel(logging.WARNING)
 
 
