@@ -21,6 +21,7 @@ from ops.framework import EventSource
 from ops.model import Relation
 
 from pydantic import (
+    ConfigDict,
     Field,
 )
 
@@ -81,7 +82,14 @@ class AzureServicePrincipalProviderModel(BaseCommonModel):
     client_id: ExtraSecretStr
     client_secret: ExtraSecretStr
 
-    secret_extra: SecretString | None = Field(default=None)
+    model_config = ConfigDict(
+        validate_by_name=True,
+        validate_by_alias=True,
+        populate_by_name=True,
+        serialize_by_alias=True,
+        alias_generator=lambda x: x.replace("_", "-"),
+        extra="allow",
+    )
 
 
 class AzureServicePrincipalRequirer(EventHandlers):
