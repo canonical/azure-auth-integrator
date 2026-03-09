@@ -133,7 +133,9 @@ def test_relation_application_data(
     charm_configuration["options"]["tenant-id"]["default"] = "tenantid"
     charm_configuration["options"]["credentials"]["default"] = credentials_secret.id
     ctx = Context(AzureAuthIntegratorCharm, meta=METADATA, config=charm_configuration, unit_id=0)
-    azure_service_principal_relation = Relation(endpoint="azure-service-principal-credentials")
+    azure_service_principal_relation = Relation(
+        endpoint="azure-service-principal-credentials",
+    )
     state_in = dataclasses.replace(
         base_state, relations=[azure_service_principal_relation], secrets={credentials_secret}
     )
@@ -146,5 +148,6 @@ def test_relation_application_data(
     provider_data = state_out.get_relation(azure_service_principal_relation.id).local_app_data
     assert provider_data["subscription-id"] == "subscriptionid"
     assert provider_data["tenant-id"] == "tenantid"
-    assert provider_data["client-id"] == "clientid"
-    assert provider_data["client-secret"] == "clientsecret"
+    secret = state_out.get_secret(id=provider_data["secret-extra"]).latest_content
+    assert secret["client-id"] == "clientid"
+    assert secret["client-secret"] == "clientsecret"

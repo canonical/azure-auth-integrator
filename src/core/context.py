@@ -5,7 +5,6 @@
 
 from ops import ConfigData, Model
 
-from constants import AZURE_SERVICE_PRINCIPAL_MANDATORY_OPTIONS
 from core.domain import AzureServicePrincipalInfo
 from utils.logging import WithLogging
 from utils.secrets import decode_secret_key
@@ -19,22 +18,18 @@ class Context(WithLogging):
         self.charm_config = config
 
     @property
-    def azure_service_principal(self) -> AzureServicePrincipalInfo | None:
+    def azure_service_principal(self) -> AzureServicePrincipalInfo:
         """Return information related to the Azure service principal parameters."""
-        for option in AZURE_SERVICE_PRINCIPAL_MANDATORY_OPTIONS:
-            if self.charm_config.get(option) is None:
-                return None
-
         credentials = self.charm_config.get("credentials")
         try:
             secret_dict = decode_secret_key(self.model, credentials)
         except Exception as e:
             self.logger.warning(str(e))
-            return None
+            secret_dict = {}
 
         return AzureServicePrincipalInfo(
             subscription_id=self.charm_config.get("subscription-id"),
             tenant_id=self.charm_config.get("tenant-id"),
-            client_id=secret_dict.get("client-id"),
-            client_secret=secret_dict.get("client-secret"),
+            client_id=secret_dict.get("client-id", ""),
+            client_secret=secret_dict.get("client-secret", ""),
         )

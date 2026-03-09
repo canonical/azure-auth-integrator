@@ -5,14 +5,15 @@
 
 import ops
 from ops import CharmBase
-from ops.charm import ConfigChangedEvent
+from ops.charm import (
+    ConfigChangedEvent,
+)
 
 from constants import AZURE_SERVICE_PRINCIPAL_RELATION_NAME
 from core.context import Context
 from events.base import BaseEventHandler
 from lib.azure_service_principal import (
-    AzureServicePrincipalProviderData,
-    AzureServicePrincipalProviderEventHandlers,
+    AzureServicePrincipalProvider,
     ServicePrincipalInfoRequestedEvent,
 )
 from utils.logging import WithLogging
@@ -27,28 +28,26 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
         self.charm = charm
         self.context = context
 
-        self.azure_service_principal_provider_data = AzureServicePrincipalProviderData(
-            self.charm.model, AZURE_SERVICE_PRINCIPAL_RELATION_NAME
-        )
-        self.azure_service_principal_provider = AzureServicePrincipalProviderEventHandlers(
-            self.charm, self.azure_service_principal_provider_data
+        self.azure_service_principal_provider = AzureServicePrincipalProvider(
+            self.charm, AZURE_SERVICE_PRINCIPAL_RELATION_NAME
         )
 
         self.framework.observe(self.charm.on.update_status, self._on_update_status)
         self.framework.observe(self.charm.on.config_changed, self._on_config_changed)
         self.framework.observe(self.charm.on.secret_changed, self._on_secret_changed)
+
         self.framework.observe(
             self.azure_service_principal_provider.on.service_principal_info_requested,
             self._on_azure_service_principal_info_requested,
         )
 
-    def _on_update_status(self, event: ops.UpdateStatusEvent):
+    def _on_update_status(self, _event: ops.UpdateStatusEvent):
         """Handle the update status event."""
         self._update_provider_data()
 
-    def _on_config_changed(self, event: ConfigChangedEvent) -> None:  # noqa: C901
+    def _on_config_changed(self, _event: ConfigChangedEvent) -> None:  # noqa: C901
         """Event handler for configuration changed events."""
-        # Only execute in the unit leader
+        # Only execute in the leader unit
         if not self.charm.unit.is_leader():
             return
 
@@ -77,20 +76,17 @@ class LifecycleEvents(BaseEventHandler, WithLogging):
 
     def _update_provider_data(self):
         """Update the contents of the relation data bag."""
-        if (
-            len(self.azure_service_principal_provider_data.relations) > 0
-            and self.context.azure_service_principal
-        ):
-            for relation in self.azure_service_principal_provider_data.relations:
-                self.azure_service_principal_provider_data.update_relation_data(
-                    relation.id, self.context.azure_service_principal.to_dict()
-                )
+        self.logger.debug("Updating the provider data.")
+        data = self.context.azure_service_principal.to_dict()
+        relations = self.model.relations[AZURE_SERVICE_PRINCIPAL_RELATION_NAME]
+        for relation in relations:
+            self.azure_service_principal_provider.update_response(relation, data)
 
     def _on_azure_service_principal_info_requested(
-        self, event: ServicePrincipalInfoRequestedEvent
+        self, _event: ServicePrincipalInfoRequestedEvent
     ):
-        """Handle the `service-principal-info-requested` event."""
-        self.logger.info("On service-principal-info-requested")
+        """Handle the azure_service_principal `info_requested` event."""
+        self.logger.debug("Handling info-requested event.")
         if not self.charm.unit.is_leader():
             return
 
