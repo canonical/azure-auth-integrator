@@ -12,6 +12,7 @@ from utils.logging import WithLogging
 from utils.secrets import decode_secret_key
 
 
+# Retry due to: https://github.com/canonical/object-storage-integrator/issues/34
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_fixed(5),

@@ -12,6 +12,8 @@ import yaml
 from helpers import get_application_data
 
 logger = logging.getLogger(__name__)
+# juju.wait logs are too verbose, suppress all logs lesser than WARNING level
+logging.getLogger("jubilant.wait").setLevel(logging.WARNING)
 
 
 CHARM_METADATA = yaml.safe_load(Path("./metadata.yaml").read_text())
@@ -67,20 +69,22 @@ def test_config_options(juju: jubilant.Juju):
 
     # Assert that configuring a secret that doesn't exist produces an error message
     # Create a secret and immediately remove it
+    logger.info("Add a secret that doesn't exist, status should stay blocked.")
     secret_uri = juju.add_secret("fake-secret", {"test-key": "test-value"})
     juju.remove_secret(secret_uri)
     juju.config(APP_NAME, {"credentials": secret_uri})
-    juju.wait(jubilant.all_agents_idle, delay=5.0)
+    juju.wait(jubilant.all_agents_idle, delay=15.0)
     status = juju.wait(
         lambda status: jubilant.all_blocked(status, APP_NAME),
     )
     assert status.apps[APP_NAME].app_status.message == f"The secret '{secret_uri}' does not exist."
 
     # Add a secret but don't grant permission, so status should stay blocked
+    logger.info("Add a secret but don't grant permission, status should stay blocked.")
     secret_uri = juju.add_secret(SECRET_IDENTIFIER, {"client-id": CLIENT_ID_TEST_VALUE})
-    juju.wait(jubilant.all_agents_idle)
+    juju.wait(jubilant.all_agents_idle, delay=15.0)
     juju.config(APP_NAME, {"credentials": secret_uri})
-    juju.wait(jubilant.all_agents_idle)
+    juju.wait(jubilant.all_agents_idle, delay=15.0)
     status = juju.wait(lambda status: jubilant.all_blocked(status, APP_NAME))
     assert (
         status.apps[APP_NAME].app_status.message
@@ -89,10 +93,12 @@ def test_config_options(juju: jubilant.Juju):
     juju.remove_secret(secret_uri)
 
     # Add a secret but don't provide all values for the secret, so status should stay blocked
+    logger.info("Add a secret but don't provide all values, status should stay blocked.")
     secret_uri = juju.add_secret(SECRET_IDENTIFIER, {"client-id": CLIENT_ID_TEST_VALUE})
+    juju.wait(jubilant.all_agents_idle, delay=15.0)
     juju.grant_secret(secret_uri, APP_NAME)
     juju.config(APP_NAME, {"credentials": secret_uri})
-    juju.wait(jubilant.all_agents_idle, delay=10.0)
+    juju.wait(jubilant.all_agents_idle, delay=15.0)
     status = juju.wait(lambda status: jubilant.all_blocked(status, APP_NAME))
     assert (
         status.apps[APP_NAME].app_status.message
@@ -100,6 +106,7 @@ def test_config_options(juju: jubilant.Juju):
     )
 
     # All credentials have been provided, status should now be active
+    logger.info("Add a secret with all credentials.")
     secret_uri = juju.update_secret(
         SECRET_IDENTIFIER,
         {"client-id": CLIENT_ID_TEST_VALUE, "client-secret": CLIENT_SECRET_TEST_VALUE},
@@ -111,21 +118,20 @@ def test_config_options(juju: jubilant.Juju):
 @pytest.mark.abort_on_fail
 def test_relation_creation(juju: jubilant.Juju):
     """Relate charm and wait for the expected changes in status."""
+    logger.info("Integrate the two charms and test the relation databag.")
     juju.integrate(APP_NAME, TEST_APP_NAME)
-    juju.wait(jubilant.all_active)
+    juju.wait(jubilant.all_active, delay=5.0)
 
     # Ensure data exists in the relation databag
-    azure_credentials = get_application_data(juju, TEST_APP_NAME, RELATION_NAME)
-    logger.debug(azure_credentials)
+    app_data = get_application_data(juju, APP_NAME, RELATION_NAME)
 
-    assert "subscription-id" in azure_credentials
-    assert "tenant-id" in azure_credentials
-    assert "secret-extra" in azure_credentials
+    assert "subscription-id" in app_data
+    assert "tenant-id" in app_data
+    assert "secret-extra" in app_data
+    assert app_data["subscription-id"] == SUBSCRIPTION_ID_TEST_VALUE
+    assert app_data["tenant-id"] == TENANT_ID_TEST_VALUE
 
-    assert azure_credentials["subscription-id"] == SUBSCRIPTION_ID_TEST_VALUE
-    assert azure_credentials["tenant-id"] == TENANT_ID_TEST_VALUE
-
-    secret_uri = azure_credentials["secret-extra"]
+    secret_uri = app_data["secret-extra"]
     secret_data = juju.show_secret(secret_uri, reveal=True)
     assert secret_data.content["client-id"] == CLIENT_ID_TEST_VALUE
     assert secret_data.content["client-secret"] == CLIENT_SECRET_TEST_VALUE
@@ -142,13 +148,14 @@ def test_relation_creation(juju: jubilant.Juju):
 def test_credentials_updated(juju: jubilant.Juju):
     """Tests updating the credentials and having the updates propagated to the relation."""
     # Change the value of the config
+    logger.info("Change the value of a configuration option.")
     juju.config(APP_NAME, {"subscription-id": SUBSCRIPTION_ID_NEW_VALUE})
     juju.wait(jubilant.all_active)
 
     # Ensure data exists in the relation databag
-    azure_credentials = get_application_data(juju, TEST_APP_NAME, RELATION_NAME)
-    assert azure_credentials["subscription-id"] == SUBSCRIPTION_ID_NEW_VALUE
-    assert azure_credentials["tenant-id"] == TENANT_ID_TEST_VALUE
+    app_data = get_application_data(juju, APP_NAME, RELATION_NAME)
+    assert app_data["subscription-id"] == SUBSCRIPTION_ID_NEW_VALUE
+    assert app_data["tenant-id"] == TENANT_ID_TEST_VALUE
 
     # Ensure data exists in the requirer side
     result = juju.run(TEST_APP_UNIT_NAME, "get-azure-service-principal-info")
@@ -156,6 +163,7 @@ def test_credentials_updated(juju: jubilant.Juju):
     assert result.results["tenant-id"] == TENANT_ID_TEST_VALUE
 
     # Change the value of the secret
+    logger.info("Change the value of the secret.")
     juju.update_secret(
         SECRET_IDENTIFIER,
         {"client-id": CLIENT_ID_TEST_VALUE, "client-secret": CLIENT_SECRET_NEW_VALUE},
@@ -163,11 +171,12 @@ def test_credentials_updated(juju: jubilant.Juju):
     juju.wait(jubilant.all_active)
 
     # Ensure data exists in the relation databag
-    azure_credentials = get_application_data(juju, TEST_APP_NAME, RELATION_NAME)
-    assert "subscription-id" in azure_credentials
-    assert "tenant-id" in azure_credentials
-    assert "secret-extra" in azure_credentials
-    secret_uri = azure_credentials["secret-extra"]
+    app_data = get_application_data(juju, APP_NAME, RELATION_NAME)
+
+    assert "subscription-id" in app_data
+    assert "tenant-id" in app_data
+    assert "secret-extra" in app_data
+    secret_uri = app_data["secret-extra"]
     secret_data = juju.show_secret(secret_uri, reveal=True)
     assert secret_data.content["client-id"] == CLIENT_ID_TEST_VALUE
     assert secret_data.content["client-secret"] == CLIENT_SECRET_NEW_VALUE
