@@ -14,7 +14,7 @@ from ops.charm import ActionEvent, CharmBase, RelationJoinedEvent
 from ops.main import main
 from ops.model import ActiveStatus, BlockedStatus
 
-from lib.azure_service_principal import (
+from charms.azure_auth_integrator.v0.azure_service_principal import (
     AzureServicePrincipalRequirer,
     ServicePrincipalInfoChangedEvent,
     ServicePrincipalInfoGoneEvent,

@@ -12,7 +12,7 @@ from ops.charm import (
 from constants import AZURE_SERVICE_PRINCIPAL_RELATION_NAME
 from core.context import Context
 from events.base import BaseEventHandler
-from lib.azure_service_principal import (
+from charms.azure_auth_integrator.v0.azure_service_principal import (
     AzureServicePrincipalProvider,
     ServicePrincipalInfoRequestedEvent,
 )
