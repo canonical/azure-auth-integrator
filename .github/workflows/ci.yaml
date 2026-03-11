@@ -65,7 +65,7 @@ jobs:
     name: Release charm to test branch
     needs:
       - build
-    uses: canonical/data-platform-workflows/.github/workflows/release_charm_pr.yaml@v42.0.2
+    uses: canonical/data-platform-workflows/.github/workflows/release_charm_pr.yaml@v42.0.1
     with:
       track: "1"
       artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
