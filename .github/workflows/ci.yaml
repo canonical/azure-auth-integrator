@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install tox & poetry
         run: |
           pipx install tox
@@ -40,7 +40,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install tox & poetry
         run: |
           pipx install tox
@@ -61,6 +61,19 @@ jobs:
       path-to-charm-directory: ${{ matrix.path }}
       cache: false
 
+  release-to-test-branch:
+    name: Release charm to test branch
+    needs:
+      - build
+    uses: canonical/data-platform-workflows/.github/workflows/release_charm_pr.yaml@v42.0.1
+    with:
+      track: "1"
+      artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
+    secrets:
+      charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
+    permissions:
+      contents: write # Needed to create git tags
+
   integration-test:
     name: Run charm integration tests
     needs:
@@ -69,7 +82,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup environment
         run: |
           sudo apt-get remove -y docker-ce docker-ce-cli containerd.io

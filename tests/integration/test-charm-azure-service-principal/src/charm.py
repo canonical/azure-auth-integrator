@@ -10,15 +10,14 @@ the azure service principal requires-provides relation.
 
 import logging
 
-from ops.charm import ActionEvent, CharmBase, RelationJoinedEvent
-from ops.main import main
-from ops.model import ActiveStatus, BlockedStatus
-
-from lib.azure_service_principal import (
+from charms.azure_auth_integrator.v0.azure_service_principal import (
     AzureServicePrincipalRequirer,
     ServicePrincipalInfoChangedEvent,
     ServicePrincipalInfoGoneEvent,
 )
+from ops.charm import ActionEvent, CharmBase, RelationJoinedEvent
+from ops.main import main
+from ops.model import ActiveStatus, BlockedStatus
 
 logger = logging.getLogger(__name__)
 

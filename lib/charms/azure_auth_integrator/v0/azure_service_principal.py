@@ -1,3 +1,43 @@
+# Copyright 2026 Canonical Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Library to manage Azure Service Principal credentials.
+
+The design of the interface and the library has been specified in:
+https://docs.google.com/document/d/1RvpKpL2nxwzFmPHX9NJGe1h3J0lPQ_YltXROIB1TicI/edit?tab=t.0.
+
+This library contains a Requirer and a Provider for handling the relation and transmission
+of Azure Service Principal credentials.
+
+It makes use of the `data_interfaces` Charmhub hosted-library in order to transmit sensitive
+information as secrets. The source code is located in https://github.com/canonical/data-platform-libs
+
+The library also provides custom events to relay information about the status of the
+credentials.
+"""
+
+# The unique Charmhub library identifier, never change it
+LIBID = "d414f5220cf348f8bad08f13e6ec4a5b"
+
+# Increment this major API version when introducing breaking changes
+LIBAPI = 0
+
+# Increment this PATCH version before using `charmcraft publish-lib` or reset
+# to 0 if you are raising the major API version
+LIBPATCH = 2
+
+
 import logging
 from typing import Dict
 
@@ -216,3 +256,4 @@ class AzureServicePrincipalProvider(EventHandlers):
             attr_name = field.replace("-", "_")
             setattr(model, attr_name, response_data[field])
         self.interface.write_model(relation.id, model)
+
