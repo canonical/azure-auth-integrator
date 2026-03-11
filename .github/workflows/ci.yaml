@@ -37,10 +37,10 @@ jobs:
   unit-test:
     name: Unit tests
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install tox & poetry
         run: |
           pipx install tox
