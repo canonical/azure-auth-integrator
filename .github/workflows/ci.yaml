@@ -63,6 +63,7 @@ jobs:
 
   release-to-test-branch:
     name: Release charm to test branch
+    if: ${{ github.event_name == 'pull_request' }}
     needs:
       - build
     uses: canonical/data-platform-workflows/.github/workflows/release_charm_pr.yaml@v42.0.1
