@@ -52,11 +52,17 @@ requires:
     interface: azure_service_principal
 ```
 
-`azure_service_principal` has a library released on Charmhub that can be pulled by running:
+`azure_service_principal` has a library released on Charmhub that can be pulled by adding the following section in `charmcraft.yaml`:
 
-```shell
-charmcraft fetch-lib charms.azure_auth_integrator.v0.azure_service_principal
+```yaml
+# charmcraft.yaml
+
+charm-libs:
+  - lib: azure_auth_integrator.azure_service_principal
+    version: "0"
 ```
+
+And then run `charmcraft fetch-libs` to pull the library from Charmhub.
 
 On the requirer side of the charm, instantiate an `AzureServicePrincipalRequirer` object:
 
