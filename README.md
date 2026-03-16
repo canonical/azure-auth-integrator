@@ -52,7 +52,7 @@ requires:
     interface: azure_service_principal
 ```
 
-`azure_service_principal` has a library released on Charmhub that can be pulled by adding the following section in `charmcraft.yaml`:
+`azure_service_principal` has a library released on Charmhub that can be pulled by updating the `charm-libs` section in `charmcraft.yaml`. Since `azure_services_principal` depends on version `v1` of the [data_interfaces](https://github.com/canonical/data-platform-libs/blob/ba0faad1bf8d52409aff80f96b4163935264bd40/lib/charms/data_platform_libs/v1/data_interfaces.py) charm lib, it also should be specified as a dependency:
 
 ```yaml
 # charmcraft.yaml
@@ -60,6 +60,8 @@ requires:
 charm-libs:
   - lib: azure_auth_integrator.azure_service_principal
     version: "0"
+  - lib: data_platform_libs.data_interfaces
+    version: "1"
 ```
 
 And then run `charmcraft fetch-libs` to pull the library from Charmhub.
