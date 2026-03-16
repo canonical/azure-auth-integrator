@@ -25,6 +25,176 @@ information as secrets. The source code is located in https://github.com/canonic
 
 The library also provides custom events to relay information about the status of the
 credentials.
+
+
+#### Requirer charm
+
+On the requirer side of the charm, instantiate an `AzureServicePrincipalRequirer` object:
+
+```python
+# charm.py
+
+from charms.azure_auth_integrator.v0.azure_service_principal import (
+    AzureServicePrincipalRequirer,
+)
+
+class RequirerCharm(CharmBase):
+
+    def __init__(self, *args):
+        super().__init__(*args)
+
+            ...
+
+        self.azure_service_principal_client = AzureServicePrincipalRequirer(
+                    self,
+                    relation_name="azure-service-principal-credentials"
+                )
+```
+
+
+Using this instance of class `AzureServicePrincipalRequirer`, the requirer charm then needs to listen
+to custom events `service_principal_info_changed` and `service_principal_info_gone` and handle them
+ appropriately in the charm code.
+
+- The event `service_principal_info_changed` is fired whenever `azure-auth-integrator` has written
+new data to the relation databag, which needs to be handled by the requirer charm by updating its
+state with the new Azure Service Principal connection information.
+- The event `service_principal_info_gone` is fired when the relation with `azure-auth-integrator` is
+broken, which needs to be handled by the requirer charm by updating its state to not use the Azure
+Service principal connection information anymore.
+
+```python
+# charm.py
+
+from charms.azure_auth_integrator.v0.azure_service_principal import (
+    AzureServicePrincipalRequirer,
+    ServicePrincipalInfoChangedEvent,
+    ServicePrincipalInfoGoneEvent,
+)
+
+class RequirerCharm(CharmBase):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+            self.azure_service_principal_client = AzureServicePrincipalRequirer(
+                    self,
+                        relation_name="azure-service-prinicpal-credentials"
+                )
+
+        # Observe custom events
+        self.framework.observe(
+            self.azure_service_principal_client.on.service_principal_info_changed,
+            self._on_service_principal_info_changed,
+        )
+        self.framework.observe(
+            self.azure_service_principal_client.on.service_principal_info_gone,
+            self._on_service_principal_info_gone,
+        )
+
+
+    def _on_service_principal_info_changed(self, event: ServicePrincipalInfoChangedEvent):
+        # access and consume data from the provider
+        connection_info = self.azure_service_principal_client.get_azure_service_principal_info()
+        process_connection_info(connection_info)
+
+    def _on_service_principal_info_gone(self, event: ServicePrincipalInfoGoneEvent):
+        # notify charm code that credentials are removed
+        process_connection_info(None)
+
+```
+
+The latest Azure Service Principal connection information shared by the `azure-auth-integrator` over
+the relation can be fetched using the utility method `get_azure_service_principal_info()` available
+in the `AzureServicePrincipalRequirer` instance, which returns a dictionary:
+
+```python
+        AzureServicePrincipalInfo = {
+            "subscription-id": str,
+            "tenant-id": str,
+            "client-id": str,
+            "client-secret": str,
+        }
+```
+
+
+#### Provider charm
+
+If you need a provider charm that only relays the Azure Service Principal credentials to a
+requirer, then you probably don't need to implement your own provider, and can just use
+`azure-auth-integrator`: https://github.com/canonical/azure-auth-integrator
+
+On the provider side of the charm, instantiate an `AzureServicePrincipalProvider` object:
+
+```python
+# charm.py
+
+from charms.azure_auth_integrator.v0.azure_service_principal import (
+    AzureServicePrincipalProvider,
+)
+
+class ProviderCharm(CharmBase):
+
+    def __init__(self, *args):
+        super().__init__(*args)
+
+            ...
+
+        self.azure_service_principal_provider = AzureServicePrincipalProvider(
+            self,
+            relation_name="azure-service-principal-credentials"
+        )
+
+```
+
+Using this instance of class `AzureServicePrincipalProvider`, the provider charm then needs to listen
+to the custom event `service_principal_info_requested`, which is emitted when the integration with
+requirer charm is initially made.
+
+The relation data can be set and/or updated with the `update_response` method. To make sure the data
+stays updated, make sure to call this method whenever any of the provided credentials may have changed:
+
+```python
+# charm.py
+
+from charms.azure_auth_integrator.v0.azure_service_principal import (
+    AzureServicePrincipalProvider,
+    ServicePrincipalInfoRequestedEvent,
+)
+
+AZURE_SERVICE_PRINCIPAL_RELATION_NAME = "azure-service-principal-credentials"
+
+class ProviderCharm(CharmBase):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+        self.azure_service_principal_provider = AzureServicePrincipalProvider(
+            self,
+            relation_name=AZURE_SERVICE_PRINCIPAL_RELATION_NAME
+        )
+
+        # Observe custom events
+        self.framework.observe(
+            self.azure_service_principal_provider.on.service_principal_info_requested,
+            self._update_provider_data,
+        )
+        # Also observe events in which data may have changed
+        self.framework.observe(
+            self.charm.on_config_changed,
+            self._update_provider_data,
+        )
+
+
+    def _update_provider_data(self, event: ServicePrincipalInfoRequestedEvent):
+        # Gather data as a dictionary
+        data = ...
+        # Get instances of the relation
+        relations = self.model.relations[AZURE_SERVICE_PRINCIPAL_RELATION_NAME]
+        for relation in relations:
+            self.azure_service_principal_provider.update_response(relation, data)
+
+```
+
+
 """
 
 # The unique Charmhub library identifier, never change it
@@ -35,7 +205,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 2
+LIBPATCH = 3
 
 
 import logging
