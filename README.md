@@ -42,8 +42,8 @@ The requirer charm should now have access to all credentials needed to access yo
 | Option | Type | Description |
 | ------ | ---- | ----------- |
 | subscription-id | string | The subscription ID of the service principal used to authenticate with Azure Storage. |
-| subscription-id | string | The tenant ID of the service principal used to authenticate with Azure Storage. |
-| tenant-id | secret | The credentials to connect to Azure service principal. This must be a Juju Secret URI pointing to a secret containing the keys: client-id and client-secret. |
+| tenant-id | string | The tenant ID of the service principal used to authenticate with Azure Storage. |
+| credentials-id | secret | The credentials to connect to Azure service principal. This must be a Juju Secret URI pointing to a secret containing the keys: client-id and client-secret. |
 
 
 ## Integrating your charm with `azure-auth-integrator`
