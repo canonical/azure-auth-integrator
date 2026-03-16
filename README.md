@@ -79,7 +79,10 @@ class RequirerCharm(CharmBase):
 ```
 
 
-Using this instance of class `AzureServicePrincipalRequirer`, the requirer charm then needs to listen to custom events `service_principal_connection_info_changed` and `service_principal_info_gone` and handle them appropriately in the charm code. The event `service_principal_info_changed` is fired whenever `azure-auth-integrator` has written new data to the relation databag, which needs to be handled by the requirer charm by updating its state with the new Azure Service Principal connection information. The event `service_principal_info_gone` is fired when the relation with `azure-auth-integrator` is broken, which needs to be handled by the requirer charm by updating its state to not use the Azure Service principal connection information anymore.
+Using this instance of class `AzureServicePrincipalRequirer`, the requirer charm then needs to listen to custom events `service_principal_connection_info_changed` and `service_principal_info_gone` and handle them appropriately in the charm code.
+
+- The event `service_principal_info_changed` is fired whenever `azure-auth-integrator` has written new data to the relation databag, which needs to be handled by the requirer charm by updating its state with the new Azure Service Principal connection information.
+- The event `service_principal_info_gone` is fired when the relation with `azure-auth-integrator` is broken, which needs to be handled by the requirer charm by updating its state to not use the Azure Service principal connection information anymore.
 
 ```python
 # charm.py
@@ -118,7 +121,7 @@ class RequirerCharm(CharmBase):
 
 ```
 
-The latest Azure Service Principal connection information shared by the `azure-auth-integrator` over the relation can be fetched using the utility function `get_azure_service_principal_info` available in the `AzureServicePrincipalRequirer` instance, which returns a dictionary:
+The latest Azure Service Principal connection information shared by the `azure-auth-integrator` over the relation can be fetched using the utility method `get_azure_service_principal_info()` available in the `AzureServicePrincipalRequirer` instance, which returns a dictionary:
 
 ```python
 	AzureServicePrincipalInfo = {
