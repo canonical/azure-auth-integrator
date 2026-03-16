@@ -61,7 +61,13 @@ charmcraft fetch-lib charms.azure_auth_integrator.v0.azure_service_principal
 On the requirer side of the charm, instantiate an `AzureServicePrincipalRequirer` object:
 
 ```python
-    class RequirerCharm(CharmBase):
+# charm.py
+
+from charms.azure_auth_integrator.v0.azure_service_principal import (
+    AzureServicePrincipalRequirer,
+)
+
+class RequirerCharm(CharmBase):
     """Requirer charm that relates to Azure auth integrator."""
 
     def __init__(self, *args):
@@ -76,7 +82,7 @@ On the requirer side of the charm, instantiate an `AzureServicePrincipalRequirer
 Using this instance of class `AzureServicePrincipalRequirer`, the requirer charm then needs to listen to custom events `service_principal_connection_info_changed` and `service_principal_info_gone` and handle them appropriately in the charm code. The event `service_principal_info_changed` is fired whenever `azure-auth-integrator` has written new data to the relation databag, which needs to be handled by the requirer charm by updating its state with the new Azure Service Principal connection information. The event `service_principal_info_gone` is fired when the relation with `azure-auth-integrator` is broken, which needs to be handled by the requirer charm by updating its state to not use the Azure Service principal connection information anymore.
 
 ```python
-# file: charm.py
+# charm.py
 
 from charms.azure_auth_integrator.v0.azure_service_principal import (
     AzureServicePrincipalRequirer,
