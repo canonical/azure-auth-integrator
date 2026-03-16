@@ -75,7 +75,7 @@ class RequirerCharm(CharmBase):
 
 	    ...
 
-        self.azure_service_principal_client = AzureServicePrincipalRequirer(self, "azure-service-prinicpal-credentials")
+        self.azure_service_principal_client = AzureServicePrincipalRequirer(self, relation_name="azure-service-prinicpal-credentials")
 ```
 
 
@@ -97,7 +97,7 @@ class RequirerCharm(CharmBase):
     def __init__(self, *args):
         super().__init__(*args)
 
-	    self.azure_service_principal_client = AzureServicePrincipalRequirer(self, "azure-service-prinicpal-credentials")
+	    self.azure_service_principal_client = AzureServicePrincipalRequirer(self, relation_name="azure-service-prinicpal-credentials")
 
         # Observe custom events
         self.framework.observe(
