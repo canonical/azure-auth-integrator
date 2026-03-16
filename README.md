@@ -19,7 +19,7 @@ Now configure it with your Azure credentials:
 juju config azure-auth-integrator subscription-id=<your-subscription-id> tenant-id=<your-tenant-id>
 ```
 
-Requirer charms also need the `client-id` and `client-secret` which uniquely identify your app. To pass this sensitive information to the charm, add a Juju secret with these values, and grant access to `azure-auth-integrator` as follows:
+Requirer charms also need the `client-id` and `client-secret` keys which uniquely identify your app. To pass this sensitive information to the charm, add a Juju secret with these values, and grant access to `azure-auth-integrator` as follows:
 ```shell
 juju add-secret my-secret client-id=<your-client-id> client-secret=<your-client-password>
 juju grant-secret my-secret azure-auth-integrator
@@ -36,6 +36,102 @@ juju integrate azure-auth-integrator <requirer-charm>
 ```
 
 The requirer charm should now have access to all credentials needed to access your Azure resources.
+
+
+## Integrating your charm with `azure-auth-integrator`
+
+Charmed applications can enable the integration with `azure-auth-integrator` over the `azure_service_principal` relation interface, allowing them to consume Azure Service Principal connection information over the Juju relation.
+
+First, add a relation endpoint to the `requires` section of your charm's metadata:
+
+```yaml
+# metadata.yaml
+
+requires:
+  azure-service-principal-credentials:
+    interface: azure_service_principal
+```
+
+`azure_service_principal` has a library released on Charmhub that can be pulled by running:
+
+```shell
+charmcraft fetch-lib charms.azure_auth_integrator.v0.azure_service_principal
+```
+
+On the requirer side of the charm, instantiate an `AzureServicePrincipalRequirer` object:
+
+```python
+    class RequirerCharm(CharmBase):
+    """Requirer charm that relates to Azure auth integrator."""
+
+    def __init__(self, *args):
+        super().__init__(*args)
+
+	    ...
+
+        self.azure_service_principal_client = AzureServicePrincipalRequirer(self, "azure-service-prinicpal-credentials")
+```
+
+
+Using this instance of class `AzureServicePrincipalRequirer`, the requirer charm then needs to listen to custom events `service_principal_connection_info_changed` and `service_principal_info_gone` and handle them appropriately in the charm code. The event `service_principal_info_changed` is fired whenever `azure-auth-integrator` has written new data to the relation databag, which needs to be handled by the requirer charm by updating its state with the new Azure Service Principal connection information. The event `service_principal_info_gone` is fired when the relation with `azure-auth-integrator` is broken, which needs to be handled by the requirer charm by updating its state to not use the Azure Service principal connection information anymore.
+
+```python
+# file: charm.py
+
+from charms.azure_auth_integrator.v0.azure_service_principal import (
+    AzureServicePrincipalRequirer,
+    ServicePrincipalInfoChangedEvent,
+    ServicePrincipalInfoGoneEvent,
+)
+
+class RequirerCharm(CharmBase):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+	    self.azure_service_principal_client = AzureServicePrincipalRequirer(self, "azure-service-prinicpal-credentials")
+
+        # Observe custom events
+        self.framework.observe(
+            self.azure_service_principal_client.on.service_principal_info_changed,
+            self._on_service_principal_info_changed,
+        )
+        self.framework.observe(
+            self.azure_service_principal_client.on.service_principal_info_gone,
+            self._on_service_principal_info_gone,
+        )
+
+
+    def _on_service_principal_info_changed(self, event: ServicePrincipalInfoChangedEvent):
+        # access and consume data from the provider
+        connection_info = self.azure_service_principal_client.get_azure_service_principal_info()
+        process_connection_info(connection_info)
+
+    def _on_service_principal_info_gone(self, event: ServicePrincipalInfoGoneEvent):
+        # notify charm code that credentials are removed
+        process_connection_info(None)
+
+```
+
+The latest Azure Service Principal connection information shared by the `azure-auth-integrator` over the relation can be fetched using the utility function `get_azure_service_principal_info` available in the `AzureServicePrincipalRequirer` instance, which returns a dictionary:
+
+```python
+	AzureServicePrincipalInfo = {
+	    "subscription-id": str,
+		"tenant-id": str,
+		"client-id": str,
+		"client-secret": str,
+	}
+```
+
+Once the requirer charm is built and deployed, it can integrated with `azure-auth-integrator` by executing:
+
+```shell
+juju integrate azure-auth-integrator requirer-charm
+```
+
+## Security
+Security issues in the `azure-auth-integrator` operator can be reported through [LaunchPad](https://wiki.ubuntu.com/DebuggingSecurity#How%20to%20File). Please do not file GitHub issues about security issues.
+
 
 ## Community and support
 
