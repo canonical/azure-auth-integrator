@@ -93,7 +93,7 @@ class RequirerCharm(CharmBase):
 
         self.azure_service_principal_client = AzureServicePrincipalRequirer(
 		    self,
-		    relation_name="azure-service-prinicpal-credentials"
+		    relation_name="azure-service-principal-credentials"
 		)
 ```
 
