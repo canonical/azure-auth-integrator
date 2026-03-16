@@ -256,4 +256,3 @@ class AzureServicePrincipalProvider(EventHandlers):
             attr_name = field.replace("-", "_")
             setattr(model, attr_name, response_data[field])
         self.interface.write_model(relation.id, model)
-
