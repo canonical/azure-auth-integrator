@@ -17,11 +17,23 @@
 The design of the interface and the library has been specified in:
 https://docs.google.com/document/d/1RvpKpL2nxwzFmPHX9NJGe1h3J0lPQ_YltXROIB1TicI/edit?tab=t.0.
 
-This library contains a Requirer and a Provider for handling the relation and transmission
+This library contains a Requirer and a Provider class for handling the relation and transmission
 of Azure Service Principal credentials.
 
-It makes use of the `data_interfaces` Charmhub hosted-library in order to transmit sensitive
-information as secrets. The source code is located in https://github.com/canonical/data-platform-libs
+It depends on the `data_interfaces` Charmhub hosted-library in order to transmit sensitive
+information as secrets. Make sure to also include it as dependency in your `charmcraft.yaml`:
+
+```yaml
+# charmcraft.yaml
+
+charm-libs:
+  - lib: azure_auth_integrator.azure_service_principal
+    version: "0"
+  - lib: data_platform_libs.data_interfaces
+    version: "1"
+```
+
+The source code for `data_interfaces` is located at: https://github.com/canonical/data-platform-libs
 
 The library also provides custom events to relay information about the status of the
 credentials.
@@ -426,3 +438,4 @@ class AzureServicePrincipalProvider(EventHandlers):
             attr_name = field.replace("-", "_")
             setattr(model, attr_name, response_data[field])
         self.interface.write_model(relation.id, model)
+
