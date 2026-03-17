@@ -17,7 +17,7 @@
 The design of the interface and the library has been specified in:
 https://docs.google.com/document/d/1RvpKpL2nxwzFmPHX9NJGe1h3J0lPQ_YltXROIB1TicI/edit?tab=t.0.
 
-This library contains a Requirer and a Provider for handling the relation and transmission
+This library contains a Requirer and a Provider classes for handling the relation and transmission
 of Azure Service Principal credentials.
 
 It makes use of the `data_interfaces` Charmhub hosted-library in order to transmit sensitive
