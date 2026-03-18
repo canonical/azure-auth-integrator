@@ -89,12 +89,12 @@ class RequirerCharm(CharmBase):
     def __init__(self, *args):
         super().__init__(*args)
 
-	    ...
+        ...
 
         self.azure_service_principal_client = AzureServicePrincipalRequirer(
-		    self,
-		    relation_name="azure-service-principal-credentials"
-		)
+            self,
+            relation_name="azure-service-principal-credentials"
+        )
 ```
 
 
@@ -116,10 +116,10 @@ class RequirerCharm(CharmBase):
     def __init__(self, *args):
         super().__init__(*args)
 
-	    self.azure_service_principal_client = AzureServicePrincipalRequirer(
-		    self,
-			relation_name="azure-service-prinicpal-credentials"
-		)
+        self.azure_service_principal_client = AzureServicePrincipalRequirer(
+            self,
+            relation_name="azure-service-prinicpal-credentials"
+        )
 
         # Observe custom events
         self.framework.observe(
@@ -146,12 +146,12 @@ class RequirerCharm(CharmBase):
 The latest Azure Service Principal connection information shared by the `azure-auth-integrator` over the relation can be fetched using the utility method `get_azure_service_principal_info()` available in the `AzureServicePrincipalRequirer` instance, which returns a dictionary:
 
 ```python
-	AzureServicePrincipalInfo = {
-	    "subscription-id": str,
-		"tenant-id": str,
-		"client-id": str,
-		"client-secret": str,
-	}
+    AzureServicePrincipalInfo = {
+        "subscription-id": str,
+        "tenant-id": str,
+        "client-id": str,
+        "client-secret": str,
+    }
 ```
 
 Once the requirer charm is built and deployed, it can integrated with `azure-auth-integrator` by executing:
