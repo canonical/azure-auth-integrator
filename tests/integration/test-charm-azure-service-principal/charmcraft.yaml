@@ -7,3 +7,8 @@ platforms:
 parts:
   charm:
     plugin: charm
+charm-libs:
+  - lib: azure_auth_integrator.azure_service_principal
+    version: "0"
+  - lib: data_platform_libs.data_interfaces
+    version: "1"
