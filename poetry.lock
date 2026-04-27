@@ -1653,14 +1653,14 @@ testing = ["coverage (>=6.2)", "flaky (>=3.5.0)", "hypothesis (>=5.7.1)", "mypy 
 
 [[package]]
 name = "pytest-operator"
-version = "0.34.0"
-description = "Fixtures for Operators"
+version = "0.43.2"
+description = "Fixtures for Charmed Operators"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8"
 groups = ["integration"]
 files = [
-    {file = "pytest-operator-0.34.0.tar.gz", hash = "sha256:b2d85c666436fae41e8e8f914e12c07362c473caa0f325c58e1270b00fd4fca4"},
-    {file = "pytest_operator-0.34.0-py3-none-any.whl", hash = "sha256:a3534ef376c5931beb04859359f18a4477001e14ed664459fb148cfafaffb943"},
+    {file = "pytest_operator-0.43.2-py3-none-any.whl", hash = "sha256:d7d01ffe35d14b75577fd80a07c34f0a9f4835cfc6d373b8e2f995bcb4146bda"},
+    {file = "pytest_operator-0.43.2.tar.gz", hash = "sha256:3db34dcd9c114a2e41a9bc61da72daf1264e7644fd5b92e855f250cb337e01c3"},
 ]
 
 [package.dependencies]
@@ -2110,4 +2110,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "9678af585700357457002e928f0dd48dd1f36035d98d652efb0017de368454ec"
+content-hash = "95ba75e6692c3fa3ae351725100e55fb200d37ce1c7f7e89077afc27b3b1a012"
