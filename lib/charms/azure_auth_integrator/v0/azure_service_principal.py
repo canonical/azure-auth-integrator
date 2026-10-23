@@ -217,7 +217,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 3
+LIBPATCH = 4
 
 
 import logging
@@ -357,9 +357,7 @@ class AzureServicePrincipalRequirer(EventHandlers):
         logger.info(f"Azure service principal relation ({event.relation.name}) changed...")
 
         # Copy response to the local application databag
-        model = self.interface.build_model(
-            event.relation.id, component=self.relations[event.relation.id].app
-        )
+        model = self.interface.build_model(event.relation.id, component=event.relation.app)
         self.interface.write_model(event.relation.id, model)
 
         # check if the mandatory options are in the relation data
