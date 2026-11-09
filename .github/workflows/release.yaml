@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - run: |
@@ -44,7 +44,7 @@ jobs:
     needs:
       - lib-check
       - ci-tests
-    uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v35.0.4
+    uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v54.0.0
     with:
       track: ${{ matrix.charm.track }}
       artifact-prefix: ${{ needs.ci-tests.outputs.artifact-prefix }}
@@ -63,7 +63,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Install charmcraft
         run: sudo snap install charmcraft --channel=3.x/stable --classic
       - name: Install noctua
